@@ -4,14 +4,15 @@
 #import "XADUnarchiver.h"
 #import "XADException.h"
 
-typedef int XADAction;
 //typedef off_t xadSize; // deprecated
 
-#define XADAbortAction 0
-#define XADRetryAction 1
-#define XADSkipAction 2
-#define XADOverwriteAction 3
-#define XADRenameAction 4
+typedef NS_ENUM(int, XADAction) {
+	XADAbortAction = 0,
+	XADRetryAction = 1,
+	XADSkipAction = 2,
+	XADOverwriteAction = 3,
+	XADRenameAction = 4,
+};
 
 extern NSString *XADResourceDataKey;
 extern NSString *XADResourceForkData;
@@ -19,6 +20,8 @@ extern NSString *XADFinderFlags;
 
 
 @class UniversalDetector;
+
+@protocol XADArchiveDelegate;
 
 @interface XADArchive:NSObject
 {
@@ -41,26 +44,25 @@ extern NSString *XADFinderFlags;
 	XADArchive *parentarchive;
 }
 
-+(XADArchive *)archiveForFile:(NSString *)filename;
-+(XADArchive *)recursiveArchiveForFile:(NSString *)filename;
++(instancetype)archiveForFile:(NSString *)filename;
++(instancetype)recursiveArchiveForFile:(NSString *)filename;
 
 
 
--(id)init;
--(id)initWithFile:(NSString *)file;
--(id)initWithFile:(NSString *)file error:(XADError *)error;
--(id)initWithFile:(NSString *)file delegate:(id)del error:(XADError *)error;
--(id)initWithData:(NSData *)data;
--(id)initWithData:(NSData *)data error:(XADError *)error;
--(id)initWithData:(NSData *)data delegate:(id)del error:(XADError *)error;
--(id)initWithArchive:(XADArchive *)archive entry:(int)n;
--(id)initWithArchive:(XADArchive *)archive entry:(int)n error:(XADError *)error;
--(id)initWithArchive:(XADArchive *)otherarchive entry:(int)n delegate:(id)del error:(XADError *)error;
--(id)initWithArchive:(XADArchive *)otherarchive entry:(int)n
+-(instancetype)init;
+-(instancetype)initWithFile:(NSString *)file;
+-(instancetype)initWithFile:(NSString *)file error:(XADError *)error;
+-(instancetype)initWithFile:(NSString *)file delegate:(id)del error:(XADError *)error;
+-(instancetype)initWithData:(NSData *)data;
+-(instancetype)initWithData:(NSData *)data error:(XADError *)error;
+-(instancetype)initWithData:(NSData *)data delegate:(id)del error:(XADError *)error;
+-(instancetype)initWithArchive:(XADArchive *)archive entry:(int)n;
+-(instancetype)initWithArchive:(XADArchive *)archive entry:(int)n error:(XADError *)error;
+-(instancetype)initWithArchive:(XADArchive *)otherarchive entry:(int)n delegate:(id)del error:(XADError *)error;
+-(instancetype)initWithArchive:(XADArchive *)otherarchive entry:(int)n
      immediateExtractionTo:(NSString *)destination error:(XADError *)error;
--(id)initWithArchive:(XADArchive *)otherarchive entry:(int)n
+-(instancetype)initWithArchive:(XADArchive *)otherarchive entry:(int)n
      immediateExtractionTo:(NSString *)destination subArchives:(BOOL)sub error:(XADError *)error;
--(void)dealloc;
 
 -(BOOL)_parseWithErrorPointer:(XADError *)error;
 
@@ -75,14 +77,11 @@ extern NSString *XADFinderFlags;
 -(NSString *)commonTopDirectory;
 -(NSString *)comment;
 
--(void)setDelegate:(id)delegate;
--(id)delegate;
+@property (assign) id<XADArchiveDelegate> delegate;
 
--(NSString *)password;
--(void)setPassword:(NSString *)newpassword;
+@property (copy) NSString *password;
 
--(NSStringEncoding)nameEncoding;
--(void)setNameEncoding:(NSStringEncoding)encoding;
+@property NSStringEncoding nameEncoding;
 
 -(XADError)lastError;
 -(void)clearLastError;
@@ -93,11 +92,11 @@ extern NSString *XADFinderFlags;
 
 
 
--(NSDictionary *)dataForkParserDictionaryForEntry:(int)n;
--(NSDictionary *)resourceForkParserDictionaryForEntry:(int)n;
--(NSDictionary *)combinedParserDictionaryForEntry:(int)n;
+-(NSDictionary *)dataForkParserDictionaryForEntry:(NSInteger)n;
+-(NSDictionary *)resourceForkParserDictionaryForEntry:(NSInteger)n;
+-(NSDictionary *)combinedParserDictionaryForEntry:(NSInteger)n;
 
--(NSString *)nameOfEntry:(int)n;
+-(NSString *)nameOfEntry:(NSInteger)n;
 -(BOOL)entryHasSize:(int)n;
 -(off_t)uncompressedSizeOfEntry:(int)n;
 -(off_t)compressedSizeOfEntry:(int)n;
@@ -114,8 +113,8 @@ extern NSString *XADFinderFlags;
 -(CSHandle *)handleForEntry:(int)n error:(XADError *)error;
 -(CSHandle *)resourceHandleForEntry:(int)n;
 -(CSHandle *)resourceHandleForEntry:(int)n error:(XADError *)error;
--(NSData *)contentsOfEntry:(int)n;
--(NSData *)contentsOfEntry:(int)n withLength:(NSInteger)length;
+-(NSData *)contentsOfEntry:(NSInteger)n;
+-(NSData *)contentsOfEntry:(NSInteger)n withLength:(NSInteger)length;
 //-(NSData *)resourceContentsOfEntry:(int)n;
 
 -(BOOL)extractTo:(NSString *)destination;
@@ -126,8 +125,6 @@ extern NSString *XADFinderFlags;
 -(BOOL)extractEntry:(int)n to:(NSString *)destination deferDirectories:(BOOL)defer;
 -(BOOL)extractEntry:(int)n to:(NSString *)destination deferDirectories:(BOOL)defer
 resourceFork:(BOOL)resfork;
--(BOOL)extractEntry:(int)n to:(NSString *)destination deferDirectories:(BOOL)defer
-dataFork:(BOOL)datafork resourceFork:(BOOL)resfork;
 -(BOOL)extractEntry:(int)n to:(NSString *)destination deferDirectories:(BOOL)defer
 dataFork:(BOOL)datafork resourceFork:(BOOL)resfork;
 -(BOOL)extractArchiveEntry:(int)n to:(NSString *)destination;
@@ -142,19 +139,20 @@ dataFork:(BOOL)datafork resourceFork:(BOOL)resfork;
 
 // Deprecated
 
-+(NSArray *)volumesForFile:(NSString *)filename;
++(NSArray *)volumesForFile:(NSString *)filename DEPRECATED_ATTRIBUTE;
 
--(int)sizeOfEntry:(int)n;
--(void *)xadFileInfoForEntry:(int)n;
--(BOOL)extractEntry:(int)n to:(NSString *)destination overrideWritePermissions:(BOOL)override;
--(BOOL)extractEntry:(int)n to:(NSString *)destination overrideWritePermissions:(BOOL)override resourceFork:(BOOL)resfork;
--(void)fixWritePermissions;
+-(int)sizeOfEntry:(int)n DEPRECATED_ATTRIBUTE;
+-(void *)xadFileInfoForEntry:(int)n DEPRECATED_ATTRIBUTE;
+-(BOOL)extractEntry:(int)n to:(NSString *)destination overrideWritePermissions:(BOOL)override DEPRECATED_ATTRIBUTE;
+-(BOOL)extractEntry:(int)n to:(NSString *)destination overrideWritePermissions:(BOOL)override resourceFork:(BOOL)resfork DEPRECATED_ATTRIBUTE;
+-(void)fixWritePermissions DEPRECATED_ATTRIBUTE;
 
 @end
 
 
 
-@interface NSObject (XADArchiveDelegate)
+@protocol XADArchiveDelegate <NSObject>
+@optional
 
 -(NSStringEncoding)archive:(XADArchive *)archive encodingForData:(NSData *)data guess:(NSStringEncoding)guess confidence:(float)confidence;
 -(XADAction)archive:(XADArchive *)archive nameDecodingDidFailForEntry:(int)n data:(NSData *)data;
@@ -177,8 +175,8 @@ dataFork:(BOOL)datafork resourceFork:(BOOL)resfork;
 -(void)archive:(XADArchive *)archive extractionProgressFiles:(int)files of:(int)total;
 
 // Deprecated
--(NSStringEncoding)archive:(XADArchive *)archive encodingForName:(const char *)bytes guess:(NSStringEncoding)guess confidence:(float)confidence;
--(XADAction)archive:(XADArchive *)archive nameDecodingDidFailForEntry:(int)n bytes:(const char *)bytes;
+-(NSStringEncoding)archive:(XADArchive *)archive encodingForName:(const char *)bytes guess:(NSStringEncoding)guess confidence:(float)confidence DEPRECATED_ATTRIBUTE;
+-(XADAction)archive:(XADArchive *)archive nameDecodingDidFailForEntry:(int)n bytes:(const char *)bytes DEPRECATED_ATTRIBUTE;
 
 @end
 

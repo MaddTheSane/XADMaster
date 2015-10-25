@@ -16,12 +16,11 @@ extern NSString *CSBzip2Exception;
 	uint8_t inbuffer[16*1024];
 }
 
-+(CSBzip2Handle *)bzip2HandleWithHandle:(CSHandle *)handle;
-+(CSBzip2Handle *)bzip2HandleWithHandle:(CSHandle *)handle length:(off_t)length;
++(instancetype)bzip2HandleWithHandle:(CSHandle *)handle;
++(instancetype)bzip2HandleWithHandle:(CSHandle *)handle length:(off_t)length;
 
 // Initializers.
--(id)initWithHandle:(CSHandle *)handle length:(off_t)length name:(NSString *)descname;
--(void)dealloc;
+-(instancetype)initWithHandle:(CSHandle *)handle length:(off_t)length name:(NSString *)descname;
 
 // Implemented by this class.
 -(void)resetStream;

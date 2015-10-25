@@ -70,6 +70,8 @@ extern NSString *XADVolumesKey;
 extern NSString *XADVolumeScanningFailedKey;
 extern NSString *XADDiskLabelKey;
 
+@protocol XADArchiveParserDelegate;
+
 @interface XADArchiveParser:NSObject
 {
 	CSHandle *sourcehandle;
@@ -98,42 +100,37 @@ extern NSString *XADDiskLabelKey;
 +(void)initialize;
 +(Class)archiveParserClassForHandle:(CSHandle *)handle firstBytes:(NSData *)header
 resourceFork:(XADResourceFork *)fork name:(NSString *)name propertiesToAdd:(NSMutableDictionary *)props;
-+(XADArchiveParser *)archiveParserForHandle:(CSHandle *)handle name:(NSString *)name;
-+(XADArchiveParser *)archiveParserForHandle:(CSHandle *)handle name:(NSString *)name error:(XADError *)errorptr;
-+(XADArchiveParser *)archiveParserForHandle:(CSHandle *)handle resourceFork:(XADResourceFork *)fork name:(NSString *)name;
-+(XADArchiveParser *)archiveParserForHandle:(CSHandle *)handle resourceFork:(XADResourceFork *)fork name:(NSString *)name error:(XADError *)errorptr;
-+(XADArchiveParser *)archiveParserForHandle:(CSHandle *)handle firstBytes:(NSData *)header name:(NSString *)name;
-+(XADArchiveParser *)archiveParserForHandle:(CSHandle *)handle firstBytes:(NSData *)header name:(NSString *)name error:(XADError *)errorptr;
-+(XADArchiveParser *)archiveParserForHandle:(CSHandle *)handle firstBytes:(NSData *)header resourceFork:(XADResourceFork *)fork name:(NSString *)name;
-+(XADArchiveParser *)archiveParserForHandle:(CSHandle *)handle firstBytes:(NSData *)header resourceFork:(XADResourceFork *)fork name:(NSString *)name error:(XADError *)errorptr;
-+(XADArchiveParser *)archiveParserForPath:(NSString *)filename;
-+(XADArchiveParser *)archiveParserForPath:(NSString *)filename error:(XADError *)errorptr;
-+(XADArchiveParser *)archiveParserForEntryWithDictionary:(NSDictionary *)entry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum;
-+(XADArchiveParser *)archiveParserForEntryWithDictionary:(NSDictionary *)entry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum error:(XADError *)errorptr;
-+(XADArchiveParser *)archiveParserForEntryWithDictionary:(NSDictionary *)entry resourceForkDictionary:(NSDictionary *)forkentry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum;
-+(XADArchiveParser *)archiveParserForEntryWithDictionary:(NSDictionary *)entry resourceForkDictionary:(NSDictionary *)forkentry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum error:(XADError *)errorptr;
++(instancetype)archiveParserForHandle:(CSHandle *)handle name:(NSString *)name;
++(instancetype)archiveParserForHandle:(CSHandle *)handle name:(NSString *)name error:(XADError *)errorptr;
++(instancetype)archiveParserForHandle:(CSHandle *)handle resourceFork:(XADResourceFork *)fork name:(NSString *)name;
++(instancetype)archiveParserForHandle:(CSHandle *)handle resourceFork:(XADResourceFork *)fork name:(NSString *)name error:(XADError *)errorptr;
++(instancetype)archiveParserForHandle:(CSHandle *)handle firstBytes:(NSData *)header name:(NSString *)name;
++(instancetype)archiveParserForHandle:(CSHandle *)handle firstBytes:(NSData *)header name:(NSString *)name error:(XADError *)errorptr;
++(instancetype)archiveParserForHandle:(CSHandle *)handle firstBytes:(NSData *)header resourceFork:(XADResourceFork *)fork name:(NSString *)name;
++(instancetype)archiveParserForHandle:(CSHandle *)handle firstBytes:(NSData *)header resourceFork:(XADResourceFork *)fork name:(NSString *)name error:(XADError *)errorptr;
++(instancetype)archiveParserForPath:(NSString *)filename;
++(instancetype)archiveParserForPath:(NSString *)filename error:(XADError *)errorptr;
++(instancetype)archiveParserForEntryWithDictionary:(NSDictionary *)entry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum;
++(instancetype)archiveParserForEntryWithDictionary:(NSDictionary *)entry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum error:(XADError *)errorptr;
++(instancetype)archiveParserForEntryWithDictionary:(NSDictionary *)entry resourceForkDictionary:(NSDictionary *)forkentry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum;
++(instancetype)archiveParserForEntryWithDictionary:(NSDictionary *)entry resourceForkDictionary:(NSDictionary *)forkentry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum error:(XADError *)errorptr;
  
--(id)init;
--(void)dealloc;
+-(instancetype)init;
 
--(CSHandle *)handle;
--(void)setHandle:(CSHandle *)newhandle;
--(XADResourceFork *)resourceFork;
--(void)setResourceFork:(XADResourceFork *)newfork;
--(NSString *)name;
--(void)setName:(NSString *)newname;
+@property (retain) CSHandle *handle;
+@property (retain) XADResourceFork *resourceFork;
+@property (copy) NSString *name;
 -(NSString *)filename;
 -(void)setFilename:(NSString *)filename;
 -(NSArray *)allFilenames;
 -(void)setAllFilenames:(NSArray *)newnames;
 
--(id)delegate;
--(void)setDelegate:(id)newdelegate;
+@property (assign) id<XADArchiveParserDelegate> delegate;
 
 -(NSDictionary *)properties;
 -(NSString *)currentFilename;
 
--(BOOL)isEncrypted;
+@property (readonly, getter=isEncrypted) BOOL encrypted;
 -(NSString *)password;
 -(BOOL)hasPassword;
 -(void)setPassword:(NSString *)newpassword;
@@ -233,7 +230,8 @@ name:(NSString *)name;
 
 @end
 
-@interface NSObject (XADArchiveParserDelegate)
+@protocol XADArchiveParserDelegate <NSObject>
+@optional
 
 -(void)archiveParser:(XADArchiveParser *)parser foundEntryWithDictionary:(NSDictionary *)dict;
 -(BOOL)archiveParsingShouldStop:(XADArchiveParser *)parser;

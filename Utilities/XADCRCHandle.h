@@ -10,23 +10,22 @@
 	const uint32_t *table;
 }
 
-+(XADCRCHandle *)IEEECRC32HandleWithHandle:(CSHandle *)handle
++(instancetype)IEEECRC32HandleWithHandle:(CSHandle *)handle
 correctCRC:(uint32_t)correctcrc conditioned:(BOOL)conditioned;
-+(XADCRCHandle *)IEEECRC32HandleWithHandle:(CSHandle *)handle length:(off_t)length
++(instancetype)IEEECRC32HandleWithHandle:(CSHandle *)handle length:(off_t)length
 correctCRC:(uint32_t)correctcrc conditioned:(BOOL)conditioned;
-+(XADCRCHandle *)IBMCRC16HandleWithHandle:(CSHandle *)handle length:(off_t)length
++(instancetype)IBMCRC16HandleWithHandle:(CSHandle *)handle length:(off_t)length
 correctCRC:(uint32_t)correctcrc conditioned:(BOOL)conditioned;
-+(XADCRCHandle *)CCITTCRC16HandleWithHandle:(CSHandle *)handle length:(off_t)length
++(instancetype)CCITTCRC16HandleWithHandle:(CSHandle *)handle length:(off_t)length
 correctCRC:(uint32_t)correctcrc conditioned:(BOOL)conditioned;
 
--(id)initWithHandle:(CSHandle *)handle length:(off_t)length initialCRC:(uint32_t)initialcrc
+-(instancetype)initWithHandle:(CSHandle *)handle length:(off_t)length initialCRC:(uint32_t)initialcrc
 correctCRC:(uint32_t)correctcrc CRCTable:(const uint32_t *)crctable;
--(void)dealloc;
 
 -(void)resetStream;
 -(int)streamAtMost:(int)num toBuffer:(void *)buffer;
 
--(BOOL)hasChecksum;
+@property (readonly) BOOL hasChecksum;
 -(BOOL)isChecksumCorrect;
 
 @end

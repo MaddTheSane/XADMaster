@@ -17,14 +17,13 @@ extern NSString *CSFileErrorException;
 	off_t pos;
 }
 
-+(CSFileHandle *)fileHandleForReadingAtPath:(NSString *)path;
-+(CSFileHandle *)fileHandleForWritingAtPath:(NSString *)path;
-+(CSFileHandle *)fileHandleForPath:(NSString *)path modes:(NSString *)modes;
++(instancetype)fileHandleForReadingAtPath:(NSString *)path;
++(instancetype)fileHandleForWritingAtPath:(NSString *)path;
++(instancetype)fileHandleForPath:(NSString *)path modes:(NSString *)modes;
 
 // Initializers
--(id)initWithFilePointer:(FILE *)file closeOnDealloc:(BOOL)closeondealloc name:(NSString *)descname;
--(id)initAsCopyOf:(CSFileHandle *)other;
--(void)dealloc;
+-(instancetype)initWithFilePointer:(FILE *)file closeOnDealloc:(BOOL)closeondealloc name:(NSString *)descname;
+-(instancetype)initAsCopyOf:(CSFileHandle *)other;
 -(void)close;
 
 // Public methods

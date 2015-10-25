@@ -13,19 +13,17 @@
 	NSString *cachedencoding;
 }
 
-+(XADPath *)emptyPath;
-+(XADPath *)pathWithString:(NSString *)string;
-+(XADPath *)pathWithStringComponents:(NSArray *)components;
-+(XADPath *)separatedPathWithString:(NSString *)string;
-+(XADPath *)decodedPathWithData:(NSData *)bytedata encodingName:(NSString *)encoding separators:(const char *)separators;
-+(XADPath *)analyzedPathWithData:(NSData *)bytedata source:(XADStringSource *)stringsource
++(instancetype)emptyPath;
++(instancetype)pathWithString:(NSString *)string;
++(instancetype)pathWithStringComponents:(NSArray *)components;
++(instancetype)separatedPathWithString:(NSString *)string;
++(instancetype)decodedPathWithData:(NSData *)bytedata encodingName:(NSString *)encoding separators:(const char *)separators;
++(instancetype)analyzedPathWithData:(NSData *)bytedata source:(XADStringSource *)stringsource
 separators:(const char *)pathseparators;
 
--(id)init;
--(id)initWithParent:(XADPath *)parentpath;
--(id)initWithPath:(XADPath *)path parent:(XADPath *)parentpath;
-
--(void)dealloc;
+-(instancetype)init;
+-(instancetype)initWithParent:(XADPath *)parentpath;
+-(instancetype)initWithPath:(XADPath *)path parent:(XADPath *)parentpath;
 
 -(BOOL)isAbsolute;
 -(BOOL)isEmpty;
@@ -106,9 +104,6 @@ separators:(const char *)pathseparators;
 -(void)_appendPathForPartToData:(NSMutableData *)data;
 -(XADStringSource *)_sourceForPart;
 
--(BOOL)isEqual:(id)other;
--(NSUInteger)hash;
-
 @end
 
 
@@ -117,10 +112,9 @@ separators:(const char *)pathseparators;
 	NSString *string;
 }
 
--(id)initWithComponentString:(NSString *)pathstring;
--(id)initWithComponentString:(NSString *)pathstring parent:(XADPath *)parentpath;
--(id)initWithPath:(XADStringPath *)path parent:(XADPath *)parentpath;
--(void)dealloc;
+-(instancetype)initWithComponentString:(NSString *)pathstring;
+-(instancetype)initWithComponentString:(NSString *)pathstring parent:(XADPath *)parentpath;
+-(instancetype)initWithPath:(XADStringPath *)path parent:(XADPath *)parentpath;
 
 -(BOOL)_isPartAbsolute;
 -(BOOL)_isPartEmpty;
@@ -146,12 +140,11 @@ separators:(const char *)pathseparators;
 	const char *separators;
 }
 
--(id)initWithData:(NSData *)bytedata source:(XADStringSource *)stringsource
+-(instancetype)initWithData:(NSData *)bytedata source:(XADStringSource *)stringsource
 separators:(const char *)pathseparators;
--(id)initWithData:(NSData *)bytedata source:(XADStringSource *)stringsource
+-(instancetype)initWithData:(NSData *)bytedata source:(XADStringSource *)stringsource
 separators:(const char *)pathseparators parent:(XADPath *)parentpath;
--(id)initWithPath:(XADRawPath *)path parent:(XADPath *)parentpath;
--(void)dealloc;
+-(instancetype)initWithPath:(XADRawPath *)path parent:(XADPath *)parentpath;
 
 -(BOOL)_isPartAbsolute;
 -(BOOL)_isPartEmpty;

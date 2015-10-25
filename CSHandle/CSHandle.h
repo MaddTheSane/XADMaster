@@ -33,9 +33,8 @@ extern NSString *CSNotSupportedException;
 	uint8_t writebyte,writebitsleft;
 }
 
--(id)initWithName:(NSString *)descname;
--(id)initAsCopyOf:(CSHandle *)other;
--(void)dealloc;
+-(instancetype)initWithName:(NSString *)descname;
+-(instancetype)initAsCopyOf:(CSHandle *)other;
 -(void)close;
 
 

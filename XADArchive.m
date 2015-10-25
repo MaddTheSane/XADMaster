@@ -453,14 +453,14 @@ NSString *XADFinderFlags=@"XADFinderFlags";
 }
 
 
--(NSDictionary *)dataForkParserDictionaryForEntry:(int)n
+-(NSDictionary *)dataForkParserDictionaryForEntry:(NSInteger)n
 {
 	id obj=[dataentries objectAtIndex:n];
 	if(obj==[NSNull null]) return nil;
 	else return obj;
 }
 
--(NSDictionary *)resourceForkParserDictionaryForEntry:(int)n
+-(NSDictionary *)resourceForkParserDictionaryForEntry:(NSInteger)n
 {
 	id obj=[resourceentries objectAtIndex:n];
 	if(obj==[NSNull null]) return nil;
@@ -704,7 +704,7 @@ NSString *XADFinderFlags=@"XADFinderFlags";
 	return nil;
 }
 
--(NSData *)contentsOfEntry:(int)n
+-(NSData *)contentsOfEntry:(NSInteger)n
 {
 	NSDictionary *dict=[self dataForkParserDictionaryForEntry:n];
 	if(!dict) return [NSData data]; // Special case for files with only a resource fork
@@ -725,7 +725,7 @@ NSString *XADFinderFlags=@"XADFinderFlags";
 	return nil;
 }
 
--(NSData *)contentsOfEntry:(int)n withLength:(NSInteger)length
+-(NSData *)contentsOfEntry:(NSInteger)n withLength:(NSInteger)length
 {
     NSDictionary *dict=[self dataForkParserDictionaryForEntry:n];
 	if(!dict) return [NSData data]; // Special case for files with only a resource fork
