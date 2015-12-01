@@ -219,7 +219,6 @@
 		5538C3DD1C0E211600744130 /* XADPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C3011C0E211600744130 /* XADPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5538C3DE1C0E211600744130 /* XADPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 5538C3021C0E211600744130 /* XADPath.m */; };
 		5538C3DF1C0E211600744130 /* XADPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C3031C0E211600744130 /* XADPlatform.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		5538C3E01C0E211600744130 /* XADPlatformiOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 5538C3041C0E211600744130 /* XADPlatformiOS.m */; };
 		5538C3E11C0E211600744130 /* XADPlatformMacOSX.m in Sources */ = {isa = PBXBuildFile; fileRef = 5538C3051C0E211600744130 /* XADPlatformMacOSX.m */; };
 		5538C3E21C0E211600744130 /* XADResourceFork.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C3061C0E211600744130 /* XADResourceFork.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5538C3E31C0E211600744130 /* XADResourceFork.m in Sources */ = {isa = PBXBuildFile; fileRef = 5538C3071C0E211600744130 /* XADResourceFork.m */; };
@@ -228,7 +227,41 @@
 		5538C3E61C0E211600744130 /* XADStringCFString.m in Sources */ = {isa = PBXBuildFile; fileRef = 5538C30A1C0E211600744130 /* XADStringCFString.m */; };
 		5538C3E71C0E211600744130 /* XADUnarchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C30B1C0E211600744130 /* XADUnarchiver.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5538C3E81C0E211600744130 /* XADUnarchiver.m in Sources */ = {isa = PBXBuildFile; fileRef = 5538C30C1C0E211600744130 /* XADUnarchiver.m */; };
+		5538C3F61C0E259800744130 /* UniversalDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5538C3F01C0E252100744130 /* UniversalDetector.framework */; };
+		5538C3FA1C0E25DF00744130 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5538C3F91C0E25DF00744130 /* libz.tbd */; };
+		5538C3FC1C0E25E600744130 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5538C3FB1C0E25E600744130 /* libbz2.tbd */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5538C3EF1C0E252100744130 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5538C3E91C0E252000744130 /* UniversalDetector.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8DC2EF5B0486A6940098B216;
+			remoteInfo = UniversalDetector;
+		};
+		5538C3F11C0E252100744130 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5538C3E91C0E252000744130 /* UniversalDetector.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1B0DDCAB0A2D0AD10009B697;
+			remoteInfo = DetectorTest;
+		};
+		5538C3F31C0E252100744130 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5538C3E91C0E252000744130 /* UniversalDetector.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5518C6D41BDAFDCC00D50302;
+			remoteInfo = UniversalDetectorTests;
+		};
+		5538C3F71C0E259C00744130 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5538C3E91C0E252000744130 /* UniversalDetector.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = UniversalDetector;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		5538C2121C0E1FF100744130 /* XADMaster.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = XADMaster.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -454,6 +487,9 @@
 		5538C30A1C0E211600744130 /* XADStringCFString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XADStringCFString.m; sourceTree = "<group>"; };
 		5538C30B1C0E211600744130 /* XADUnarchiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XADUnarchiver.h; sourceTree = "<group>"; };
 		5538C30C1C0E211600744130 /* XADUnarchiver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XADUnarchiver.m; sourceTree = "<group>"; };
+		5538C3E91C0E252000744130 /* UniversalDetector.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = UniversalDetector.xcodeproj; path = Vendor/UniversalDetector/UniversalDetector.xcodeproj; sourceTree = "<group>"; };
+		5538C3F91C0E25DF00744130 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		5538C3FB1C0E25E600744130 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -461,6 +497,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5538C3FC1C0E25E600744130 /* libbz2.tbd in Frameworks */,
+				5538C3FA1C0E25DF00744130 /* libz.tbd in Frameworks */,
+				5538C3F61C0E259800744130 /* UniversalDetector.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -470,6 +509,9 @@
 		5538C2081C0E1FF100744130 = {
 			isa = PBXGroup;
 			children = (
+				5538C3FB1C0E25E600744130 /* libbz2.tbd */,
+				5538C3F91C0E25DF00744130 /* libz.tbd */,
+				5538C3F51C0E252400744130 /* Third-party */,
 				5538C2141C0E1FF100744130 /* XADMaster */,
 				5538C2131C0E1FF100744130 /* Products */,
 			);
@@ -872,6 +914,24 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
+		5538C3EA1C0E252000744130 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5538C3F01C0E252100744130 /* UniversalDetector.framework */,
+				5538C3F21C0E252100744130 /* DetectorTest */,
+				5538C3F41C0E252100744130 /* UniversalDetectorTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5538C3F51C0E252400744130 /* Third-party */ = {
+			isa = PBXGroup;
+			children = (
+				5538C3E91C0E252000744130 /* UniversalDetector.xcodeproj */,
+			);
+			name = "Third-party";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1007,6 +1067,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				5538C3F81C0E259C00744130 /* PBXTargetDependency */,
 			);
 			name = XADMaster;
 			productName = XADMaster;
@@ -1037,12 +1098,42 @@
 			mainGroup = 5538C2081C0E1FF100744130;
 			productRefGroup = 5538C2131C0E1FF100744130 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 5538C3EA1C0E252000744130 /* Products */;
+					ProjectRef = 5538C3E91C0E252000744130 /* UniversalDetector.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				5538C2111C0E1FF100744130 /* XADMaster */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		5538C3F01C0E252100744130 /* UniversalDetector.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = UniversalDetector.framework;
+			remoteRef = 5538C3EF1C0E252100744130 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		5538C3F21C0E252100744130 /* DetectorTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = DetectorTest;
+			remoteRef = 5538C3F11C0E252100744130 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		5538C3F41C0E252100744130 /* UniversalDetectorTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = UniversalDetectorTests.xctest;
+			remoteRef = 5538C3F31C0E252100744130 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		5538C2101C0E1FF100744130 /* Resources */ = {
@@ -1059,7 +1150,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5538C3E01C0E211600744130 /* XADPlatformiOS.m in Sources */,
 				5538C37F1C0E211600744130 /* XADWinZipWavPackHandle.m in Sources */,
 				5538C3101C0E211600744130 /* XAD7ZipBCJ2Handle.m in Sources */,
 				5538C33F1C0E211600744130 /* VariantI.c in Sources */,
@@ -1175,6 +1265,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		5538C3F81C0E259C00744130 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = UniversalDetector;
+			targetProxy = 5538C3F71C0E259C00744130 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		5538C2181C0E1FF100744130 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1264,16 +1362,17 @@
 		5538C21B1C0E1FF100744130 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = XADMaster/Info.plist;
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.github.maddthesane.XADMaster;
+				PRODUCT_BUNDLE_IDENTIFIER = de.dstoecker.xadmaster;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -1282,16 +1381,17 @@
 		5538C21C1C0E1FF100744130 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = XADMaster/Info.plist;
+				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.github.maddthesane.XADMaster;
+				PRODUCT_BUNDLE_IDENTIFIER = de.dstoecker.xadmaster;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
