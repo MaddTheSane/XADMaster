@@ -9,7 +9,7 @@
 		parent=[handle retain];
 		password=[passdata retain];
 		passwordbytes=[password bytes];
-		passwordlength=(int)[password length];
+		passwordlength=[password length];
 	}
 	return self;
 }

@@ -170,7 +170,7 @@ NSString *CSFileErrorException=@"CSFileErrorException";
 	if(feof(fh)) [self _raiseEOF];
 	else [[[[NSException alloc] initWithName:CSFileErrorException
 	reason:[NSString stringWithFormat:@"Error while attempting to read file \"%@\": %s.",name,strerror(errno)]
-	userInfo:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:errno] forKey:@"ErrNo"]] autorelease] raise];
+	userInfo:@{@"ErrNo": @(errno)}] autorelease] raise];
 }
 
 -(void)_setMultiMode

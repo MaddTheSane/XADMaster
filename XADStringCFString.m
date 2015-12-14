@@ -61,7 +61,7 @@
 
 +(NSData *)dataForString:(NSString *)string encodingName:(NSString *)encoding
 {
-	int numchars=(int)[string length];
+	NSInteger numchars=[string length];
 
 	CFIndex numbytes;
 	if(CFStringGetBytes((CFStringRef)string,CFRangeMake(0,numchars),
@@ -89,7 +89,7 @@
 		NSString *description=[NSString localizedNameOfStringEncoding:CFStringConvertEncodingToNSStringEncoding(*encodings)];
 		if(name)
 		{
-			[array addObject:[NSArray arrayWithObjects:description,name,nil]];
+			[array addObject:@[description,name]];
 		}
 		encodings++;
 	}

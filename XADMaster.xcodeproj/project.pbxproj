@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		551D6A261C1E35950098C07A /* XADPMArc1Handle.h in Headers */ = {isa = PBXBuildFile; fileRef = 551D6A241C1E35950098C07A /* XADPMArc1Handle.h */; };
+		551D6A271C1E35950098C07A /* XADPMArc1Handle.m in Sources */ = {isa = PBXBuildFile; fileRef = 551D6A251C1E35950098C07A /* XADPMArc1Handle.m */; };
 		5538C2161C0E1FF100744130 /* XADMaster.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C2151C0E1FF100744130 /* XADMaster.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5538C30D1C0E211600744130 /* XAD7ZipAESHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C21F1C0E211600744130 /* XAD7ZipAESHandle.h */; };
 		5538C30E1C0E211600744130 /* XAD7ZipAESHandle.m in Sources */ = {isa = PBXBuildFile; fileRef = 5538C2201C0E211600744130 /* XAD7ZipAESHandle.m */; };
@@ -163,9 +165,7 @@
 		5538C3A51C0E211600744130 /* des.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C2C71C0E211600744130 /* des.h */; };
 		5538C3A61C0E211600744130 /* hmac_sha1.c in Sources */ = {isa = PBXBuildFile; fileRef = 5538C2C81C0E211600744130 /* hmac_sha1.c */; };
 		5538C3A71C0E211600744130 /* hmac_sha1.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C2C91C0E211600744130 /* hmac_sha1.h */; };
-		5538C3A81C0E211600744130 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 5538C2CA1C0E211600744130 /* md5.c */; };
 		5538C3A91C0E211600744130 /* md5.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C2CB1C0E211600744130 /* md5.h */; };
-		5538C3AA1C0E211600744130 /* sha.c in Sources */ = {isa = PBXBuildFile; fileRef = 5538C2CC1C0E211600744130 /* sha.c */; };
 		5538C3AB1C0E211600744130 /* sha.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C2CD1C0E211600744130 /* sha.h */; };
 		5538C3AC1C0E211600744130 /* CSBlockStreamHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C2CF1C0E211600744130 /* CSBlockStreamHandle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5538C3AD1C0E211600744130 /* CSBlockStreamHandle.m in Sources */ = {isa = PBXBuildFile; fileRef = 5538C2D01C0E211600744130 /* CSBlockStreamHandle.m */; };
@@ -230,6 +230,9 @@
 		5538C3F61C0E259800744130 /* UniversalDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5538C3F01C0E252100744130 /* UniversalDetector.framework */; };
 		5538C3FA1C0E25DF00744130 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5538C3F91C0E25DF00744130 /* libz.tbd */; };
 		5538C3FC1C0E25E600744130 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5538C3FB1C0E25E600744130 /* libbz2.tbd */; };
+		5538C40B1C0E360000744130 /* XADMaster-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 5538C40A1C0E360000744130 /* XADMaster-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5538C4141C0E381700744130 /* sha.c in Sources */ = {isa = PBXBuildFile; fileRef = 5538C2CC1C0E211600744130 /* sha.c */; };
+		5538C4171C0E386900744130 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5538C4161C0E386900744130 /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -264,6 +267,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		551D6A241C1E35950098C07A /* XADPMArc1Handle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XADPMArc1Handle.h; sourceTree = "<group>"; };
+		551D6A251C1E35950098C07A /* XADPMArc1Handle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XADPMArc1Handle.m; sourceTree = "<group>"; };
 		5538C2121C0E1FF100744130 /* XADMaster.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = XADMaster.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5538C2151C0E1FF100744130 /* XADMaster.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XADMaster.h; sourceTree = "<group>"; };
 		5538C2171C0E1FF100744130 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -490,6 +495,8 @@
 		5538C3E91C0E252000744130 /* UniversalDetector.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = UniversalDetector.xcodeproj; path = Vendor/UniversalDetector/UniversalDetector.xcodeproj; sourceTree = "<group>"; };
 		5538C3F91C0E25DF00744130 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		5538C3FB1C0E25E600744130 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
+		5538C40A1C0E360000744130 /* XADMaster-umbrella.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "XADMaster-umbrella.h"; sourceTree = "<group>"; };
+		5538C4161C0E386900744130 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -497,6 +504,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5538C4171C0E386900744130 /* Foundation.framework in Frameworks */,
 				5538C3FC1C0E25E600744130 /* libbz2.tbd in Frameworks */,
 				5538C3FA1C0E25DF00744130 /* libz.tbd in Frameworks */,
 				5538C3F61C0E259800744130 /* UniversalDetector.framework in Frameworks */,
@@ -509,10 +517,9 @@
 		5538C2081C0E1FF100744130 = {
 			isa = PBXGroup;
 			children = (
-				5538C3FB1C0E25E600744130 /* libbz2.tbd */,
-				5538C3F91C0E25DF00744130 /* libz.tbd */,
 				5538C3F51C0E252400744130 /* Third-party */,
 				5538C2141C0E1FF100744130 /* XADMaster */,
+				5538C4151C0E382F00744130 /* Frameworks */,
 				5538C2131C0E1FF100744130 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -556,6 +563,7 @@
 				5538C30A1C0E211600744130 /* XADStringCFString.m */,
 				5538C30B1C0E211600744130 /* XADUnarchiver.h */,
 				5538C30C1C0E211600744130 /* XADUnarchiver.m */,
+				5538C40A1C0E360000744130 /* XADMaster-umbrella.h */,
 				5538C2151C0E1FF100744130 /* XADMaster.h */,
 				5538C2171C0E1FF100744130 /* Info.plist */,
 			);
@@ -608,6 +616,8 @@
 				5538C2331C0E211600744130 /* XADLZHParser.m */,
 				5538C2341C0E211600744130 /* XADLZHStaticHandle.h */,
 				5538C2351C0E211600744130 /* XADLZHStaticHandle.m */,
+				551D6A241C1E35950098C07A /* XADPMArc1Handle.h */,
+				551D6A251C1E35950098C07A /* XADPMArc1Handle.m */,
 			);
 			path = LHA;
 			sourceTree = "<group>";
@@ -841,8 +851,8 @@
 		5538C2BD1C0E211600744130 /* Crypto */ = {
 			isa = PBXGroup;
 			children = (
-				5538C2BE1C0E211600744130 /* aes.h */,
 				5538C2BF1C0E211600744130 /* aes_modes.c */,
+				5538C2BE1C0E211600744130 /* aes.h */,
 				5538C2C01C0E211600744130 /* aescrypt.c */,
 				5538C2C11C0E211600744130 /* aeskey.c */,
 				5538C2C21C0E211600744130 /* aesopt.h */,
@@ -932,6 +942,16 @@
 			name = "Third-party";
 			sourceTree = "<group>";
 		};
+		5538C4151C0E382F00744130 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5538C4161C0E386900744130 /* Foundation.framework */,
+				5538C3FB1C0E25E600744130 /* libbz2.tbd */,
+				5538C3F91C0E25DF00744130 /* libz.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -941,6 +961,7 @@
 			files = (
 				5538C3171C0E211600744130 /* XADLZMAHandle.h in Headers */,
 				5538C3821C0E211600744130 /* XADZipImplodeHandle.h in Headers */,
+				551D6A261C1E35950098C07A /* XADPMArc1Handle.h in Headers */,
 				5538C3D51C0E211600744130 /* XADArchiveParser.h in Headers */,
 				5538C37C1C0E211600744130 /* XADWinZipJPEGHandle.h in Headers */,
 				5538C3CB1C0E211600744130 /* XADDeltaHandle.h in Headers */,
@@ -1028,6 +1049,7 @@
 				5538C3731C0E211600744130 /* Decompressor.h in Headers */,
 				5538C3A71C0E211600744130 /* hmac_sha1.h in Headers */,
 				5538C3411C0E211600744130 /* XADPPMdHandles.h in Headers */,
+				5538C40B1C0E360000744130 /* XADMaster-umbrella.h in Headers */,
 				5538C3E41C0E211600744130 /* XADString.h in Headers */,
 				5538C3711C0E211600744130 /* ArithmeticDecoder.h in Headers */,
 				5538C3AE1C0E211600744130 /* CSByteStreamHandle.h in Headers */,
@@ -1174,8 +1196,8 @@
 				5538C3451C0E211600744130 /* RARAudioDecoder.c in Sources */,
 				5538C3CE1C0E211600744130 /* XADRegex.m in Sources */,
 				5538C3C11C0E211600744130 /* CSZlibHandle.m in Sources */,
+				5538C4141C0E381700744130 /* sha.c in Sources */,
 				5538C3541C0E211600744130 /* XADRAR20Handle.m in Sources */,
-				5538C3AA1C0E211600744130 /* sha.c in Sources */,
 				5538C33D1C0E211600744130 /* VariantH.c in Sources */,
 				5538C31A1C0E211600744130 /* XADLArcHandles.m in Sources */,
 				5538C3561C0E211600744130 /* XADRAR30Filter.m in Sources */,
@@ -1212,7 +1234,6 @@
 				5538C39F1C0E211600744130 /* aeskey.c in Sources */,
 				5538C3D61C0E211600744130 /* XADArchiveParser.m in Sources */,
 				5538C31C1C0E211600744130 /* XADLZHDynamicHandle.m in Sources */,
-				5538C3A81C0E211600744130 /* md5.c in Sources */,
 				5538C3DA1C0E211600744130 /* XADException.m in Sources */,
 				5538C3691C0E211600744130 /* metadata.c in Sources */,
 				5538C3331C0E211600744130 /* SubAllocatorBrimstone.c in Sources */,
@@ -1254,6 +1275,7 @@
 				5538C3921C0E211600744130 /* LZSS.c in Sources */,
 				5538C3891C0E211600744130 /* XADZipShrinkHandle.m in Sources */,
 				5538C3371C0E211600744130 /* SubAllocatorVariantH.c in Sources */,
+				551D6A271C1E35950098C07A /* XADPMArc1Handle.m in Sources */,
 				5538C30E1C0E211600744130 /* XAD7ZipAESHandle.m in Sources */,
 				5538C3201C0E211600744130 /* XADLZHParser.m in Sources */,
 				5538C3D21C0E211600744130 /* XADXORHandle.m in Sources */,
@@ -1372,6 +1394,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = module1.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = de.dstoecker.xadmaster;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1391,6 +1414,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = module1.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = de.dstoecker.xadmaster;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

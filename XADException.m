@@ -23,8 +23,7 @@ NSString *XADExceptionName=@"XADException";
 {
 //	[NSException raise:@"XADException" format:@"%@",[self describeXADError:errnum]];
 	[[[[NSException alloc] initWithName:XADExceptionName reason:[self describeXADError:errnum]
-	userInfo:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:errnum]
-	forKey:@"XADError"]] autorelease] raise];
+	userInfo:@{@"XADError": @(errnum)}] autorelease] raise];
 }
 
 
@@ -37,7 +36,7 @@ NSString *XADExceptionName=@"XADException";
 		NSString *name=[e name];
 		if([name isEqual:XADExceptionName])
 		{
-			return [[[e userInfo] objectForKey:@"XADError"] intValue];
+			return [[e userInfo][@"XADError"] intValue];
 		}
 		else if([name isEqual:CSCannotOpenFileException]) return XADOpenFileError;
 		else if([name isEqual:CSFileErrorException]) return XADUnknownError; // TODO: use ErrNo in userInfo to figure out better error

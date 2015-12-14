@@ -6,7 +6,7 @@
 
 +(int)logRoundsForPropertyData:(NSData *)propertydata
 {
-	int length=(int)[propertydata length];
+	NSInteger length=[propertydata length];
 	const uint8_t *bytes=[propertydata bytes];
 
 	if(length<1) return -1;
@@ -16,7 +16,7 @@
 
 +(NSData *)saltForPropertyData:(NSData *)propertydata
 {
-	int length=(int)[propertydata length];
+	NSInteger length=[propertydata length];
 	const uint8_t *bytes=[propertydata bytes];
 
 	if(length<1) return nil;
@@ -39,7 +39,7 @@
 
 +(NSData *)IVForPropertyData:(NSData *)propertydata
 {
-	int length=(int)[propertydata length];
+	NSInteger length=[propertydata length];
 	const uint8_t *bytes=[propertydata bytes];
 
 	if(length<1) return nil;
@@ -68,8 +68,8 @@
 {
 	uint8_t key[32];
 
-	int passchars=(int)[password length];
-	int passlength=passchars*2;
+	NSInteger passchars=[password length];
+	NSInteger passlength=passchars*2;
 	uint8_t passbytes[passlength];
 	for(int i=0;i<passchars;i++)
 	{
@@ -78,12 +78,12 @@
 		passbytes[2*i+1]=c>>8;
 	}
 
-	int saltlength=(int)[salt length];
+	NSInteger saltlength=[salt length];
 	const uint8_t *saltbytes=[salt bytes];
 
 	if(logrounds==0x3f)
 	{
-		int passcopylength=passlength;
+		NSInteger passcopylength=passlength;
 		if(passcopylength+saltlength>sizeof(key)) passcopylength=sizeof(key)-saltlength;
 
 		memset(key,0,sizeof(key));
@@ -120,7 +120,7 @@
 		parent=[handle retain];
 		startoffs=[handle offsetInFile];
 
-		int ivlength=(int)[ivdata length];
+		NSInteger ivlength=[ivdata length];
 		const uint8_t *ivbytes=[ivdata bytes];
 		memset(iv,0,sizeof(iv));
 		memcpy(iv,ivbytes,ivlength);

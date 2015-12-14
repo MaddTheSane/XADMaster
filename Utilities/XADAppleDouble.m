@@ -129,7 +129,7 @@ resourceForkLength:(off_t *)resourcelengthptr extendedAttributes:(NSDictionary *
 		NSString *name=[[[NSString alloc] initWithBytes:entries[minindex].namebytes
 		length:entries[minindex].namelen-1 encoding:NSUTF8StringEncoding] autorelease];
 
-		[extattrs setObject:data forKey:name];
+		extattrs[name] = data;
 	}
 }
 
@@ -150,6 +150,7 @@ extendedAttributes:(NSDictionary *)extattrs
 	};
 
 	// Calculate FinderInfo and extended attributes size field.
+	NSMutableDictionary *encodedkeys=[NSMutableDictionary dictionary];
 	int numattributes=0,attributeentrysize=0,attributedatasize=0;
 
 	// Sort keys and iterate over them.
@@ -161,13 +162,16 @@ extendedAttributes:(NSDictionary *)extattrs
 		// Ignore FinderInfo.
 		if([key isEqual:@"com.apple.FinderInfo"]) continue;
 
- 		NSData *data=[extattrs objectForKey:key];
-		int namelen=(int)[key lengthOfBytesUsingEncoding:NSUTF8StringEncoding]+1;
+ 		NSData *data=extattrs[key];
+		NSData *keydata=[key dataUsingEncoding:NSUTF8StringEncoding];
+		int namelen=(int)[keydata length]+1;
 		if(namelen>128) continue; // Skip entries with too long names.
 
 		numattributes++;
 		attributeentrysize+=(11+namelen+3)&~3; // Aligned to 4 bytes.
 		attributedatasize+=[data length];
+
+		encodedkeys[key] = keydata;
 	}
 
 	// Set FinderInfo size field and resource fork offset field.
@@ -189,7 +193,7 @@ extendedAttributes:(NSDictionary *)extattrs
 	[fh writeBytes:sizeof(header) fromBuffer:header];
 
 	// Write FinderInfo structure.
-	NSData *finderinfo=[extattrs objectForKey:@"com.apple.FinderInfo"];
+	NSData *finderinfo=extattrs[@"com.apple.FinderInfo"];
 	if(finderinfo)
 	{
 		if([finderinfo length]<32) [XADException raiseUnknownException];
@@ -233,12 +237,11 @@ extendedAttributes:(NSDictionary *)extattrs
 		NSString *key;
 		while((key=[enumerator nextObject]))
 		{
-			// Ignore FinderInfo.
-			if([key isEqual:@"com.apple.FinderInfo"]) continue;
+			NSData *data=extattrs[key];
+			NSData *keydata=encodedkeys[key];
+			if(!keydata) continue;
 
-			NSData *data=[extattrs objectForKey:key];
-			int namelen=(int)[key lengthOfBytesUsingEncoding:NSUTF8StringEncoding]+1;
-			if(namelen>128) continue; // Skip entries with too long names.
+			int namelen=(int)[keydata length]+1;
 
 			// Attribute entry header template.
 			uint8_t entryheader[11]=
@@ -273,12 +276,9 @@ extendedAttributes:(NSDictionary *)extattrs
 		enumerator=[keys objectEnumerator];
 		while((key=[enumerator nextObject]))
 		{
-			// Ignore FinderInfo.
-			if([key isEqual:@"com.apple.FinderInfo"]) continue;
-
-			NSData *data=[extattrs objectForKey:key];
-			int namelen=(int)[key lengthOfBytesUsingEncoding:NSUTF8StringEncoding]+1;
-			if(namelen>128) continue; // Skip entries with too long names.
+			NSData *data=extattrs[key];
+			NSData *keydata=encodedkeys[key];
+			if(!keydata) continue;
 
 			[fh writeData:data];
 		}

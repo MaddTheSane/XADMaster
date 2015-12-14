@@ -7,9 +7,9 @@ NSString *CSSizeOfSegmentUnknownException=@"CSSizeOfSegmentUnknownException";
 +(CSMultiHandle *)multiHandleWithHandleArray:(NSArray *)handlearray
 {
 	if(!handlearray) return nil;
-	int count=(int)[handlearray count];
+	NSInteger count=[handlearray count];
 	if(count==0) return nil;
-	else if(count==1) return [handlearray objectAtIndex:0];
+	else if(count==1) return handlearray[0];
 	else return [[[self alloc] initWithHandles:handlearray] autorelease];
 }
 
@@ -31,7 +31,7 @@ NSString *CSSizeOfSegmentUnknownException=@"CSSizeOfSegmentUnknownException";
 
 -(id)initWithHandles:(NSArray *)handlearray
 {
-	if((self=[super initWithName:[NSString stringWithFormat:@"%@, and %ld more combined",[[handlearray objectAtIndex:0] name],(long)[handlearray count]-1]]))
+	if((self=[super initWithName:[NSString stringWithFormat:@"%@, and %ld more combined",[handlearray[0] name],(long)[handlearray count]-1]]))
 	{
 		handles=[handlearray copy];
 		currhandle=0;
@@ -62,15 +62,15 @@ NSString *CSSizeOfSegmentUnknownException=@"CSSizeOfSegmentUnknownException";
 
 -(NSArray *)handles { return handles; }
 
--(CSHandle *)currentHandle { return [handles objectAtIndex:currhandle]; }
+-(CSHandle *)currentHandle { return handles[currhandle]; }
 
 -(off_t)fileSize
 {
 	off_t size=0;
-	int count=(int)[handles count];
+	NSInteger count=[handles count];
 	for(int i=0;i<count-1;i++)
 	{
-		off_t segsize=[(CSHandle *)[handles objectAtIndex:i] fileSize];
+		off_t segsize=[(CSHandle *)handles[i] fileSize];
 		if(segsize==CSHandleMaxLength) [self _raiseSizeUnknownForSegment:i];
 		size+=segsize;
 	}
@@ -85,21 +85,21 @@ NSString *CSSizeOfSegmentUnknownException=@"CSSizeOfSegmentUnknownException";
 	off_t offs=0;
 	for(int i=0;i<currhandle;i++)
 	{
-		off_t segsize=[(CSHandle *)[handles objectAtIndex:i] fileSize];
+		off_t segsize=[(CSHandle *)handles[i] fileSize];
 		if(segsize==CSHandleMaxLength) [self _raiseSizeUnknownForSegment:i];
 		offs+=segsize;
 	}
-	return offs+[[handles objectAtIndex:currhandle] offsetInFile];
+	return offs+[handles[currhandle] offsetInFile];
 }
 
 -(BOOL)atEndOfFile
 {
-	return currhandle==[handles count]-1&&[[handles objectAtIndex:currhandle] atEndOfFile];
+	return currhandle==[handles count]-1&&[handles[currhandle] atEndOfFile];
 }
 
 -(void)seekToFileOffset:(off_t)offs
 {
-	int count=(int)[handles count];
+	NSInteger count=[handles count];
 
 	if(offs==0)
 	{
@@ -109,20 +109,20 @@ NSString *CSSizeOfSegmentUnknownException=@"CSSizeOfSegmentUnknownException";
 	{
 		for(currhandle=0;currhandle<count-1;currhandle++)
 		{
-			off_t segsize=[(CSHandle *)[handles objectAtIndex:currhandle] fileSize];
+			off_t segsize=[(CSHandle *)handles[currhandle] fileSize];
 			if(segsize==CSHandleMaxLength) [self _raiseSizeUnknownForSegment:currhandle];
 			if(offs<segsize) break;
 			offs-=segsize;
 		}
 	}
 
-	[(CSHandle *)[handles objectAtIndex:currhandle] seekToFileOffset:offs];
+	[(CSHandle *)handles[currhandle] seekToFileOffset:offs];
 }
 
 -(void)seekToEndOfFile
 {
-	currhandle=(int)[handles count]-1;
-	[(CSHandle *)[handles objectAtIndex:currhandle] seekToEndOfFile];
+	currhandle=[handles count]-1;
+	[(CSHandle *)handles[currhandle] seekToEndOfFile];
 }
 
 -(int)readAtMost:(int)num toBuffer:(void *)buffer
@@ -134,14 +134,14 @@ NSString *CSSizeOfSegmentUnknownException=@"CSSizeOfSegmentUnknownException";
 		total+=actual;
 		if(total==num||currhandle==[handles count]-1) return (int)total;
 		currhandle++;
-		[(CSHandle *)[handles objectAtIndex:currhandle] seekToFileOffset:0];
+		[(CSHandle *)handles[currhandle] seekToFileOffset:0];
 	}
 }
 
--(void)_raiseSizeUnknownForSegment:(int)i
+-(void)_raiseSizeUnknownForSegment:(NSInteger)i
 {
 	[NSException raise:CSSizeOfSegmentUnknownException
-	format:@"Size of CSMultiHandle segment %d (%@) unknown.",i,[handles objectAtIndex:i]];
+	format:@"Size of CSMultiHandle segment %ld (%@) unknown.",i,handles[i]];
 }
 
 @end

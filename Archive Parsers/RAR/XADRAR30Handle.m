@@ -81,7 +81,7 @@
 
 	if(lastend==filterstart)
 	{
-		XADRAR30Filter *firstfilter=[stack objectAtIndex:0];
+		XADRAR30Filter *firstfilter=stack[0];
 		off_t start=filterstart;
 		int length=[firstfilter length];
 		off_t end=start+length;
@@ -107,7 +107,7 @@
 		for(;;)
 		{
 			if([stack count]==0) break;
-			XADRAR30Filter *filter=[stack objectAtIndex:0];
+			XADRAR30Filter *filter=stack[0];
 
 			// Check if this filter applies.
 			if([filter startPosition]!=filterstart) break;
@@ -128,7 +128,7 @@
 		// and sanity-check filter ordering.
 		if([stack count])
 		{
-			XADRAR30Filter *filter=[stack objectAtIndex:0];
+			XADRAR30Filter *filter=stack[0];
 			filterstart=[filter startPosition];
 
 			if(filterstart<end) [XADException raiseIllegalDataException];
@@ -560,7 +560,7 @@
 	else blocklength=oldfilterlength[num];
 
 	uint32_t registers[8]={
-		[3]=RARProgramGlobalAddress,[4]=blocklength,
+		[3]=RARProgramSystemGlobalAddress,[4]=blocklength,
 		[5]=usagecount[num],[7]=RARProgramMemorySize
 	};
 
@@ -590,7 +590,7 @@
 	}
 	else
 	{
-		code=[filtercode objectAtIndex:num];
+		code=filtercode[num];
 	}
   
 	// Read data section.

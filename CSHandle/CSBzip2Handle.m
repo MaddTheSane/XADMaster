@@ -1,5 +1,4 @@
 #import "CSBzip2Handle.h"
-#import <bzlib.h>
 
 NSString *CSBzip2Exception=@"CSBzip2Exception";
 

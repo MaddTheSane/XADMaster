@@ -5,18 +5,18 @@
 
 -(NSString *)descriptionOfValueInDictionary:(NSDictionary *)dict key:(NSString *)key
 {
-	id object=[dict objectForKey:key];
+	id object=dict[key];
 	if(!object) return nil;
 
 	if([key matchedByPattern:@"CRC32$"])
 	{
 		if(![object isKindOfClass:[NSNumber class]]) return [object description];
-		return [NSString stringWithFormat:@"0x%08llx",[object longLongValue]];
+		return [NSString stringWithFormat:@"0x%08x",[object unsignedIntValue]];
 	}
 	else if([key matchedByPattern:@"CRC16$"])
 	{
 		if(![object isKindOfClass:[NSNumber class]]) return [object description];
-		return [NSString stringWithFormat:@"0x%04llx",[object longLongValue]];
+		return [NSString stringWithFormat:@"0x%04x",[object unsignedIntValue]];
 	}
 	else if([key matchedByPattern:@"Is[A-Z0-9]"])
 	{
@@ -129,87 +129,87 @@
 		NSLocalizedString(@"Disk label",@""),XADDiskLabelKey,
 		nil];
 
-	NSString *description=[descriptions objectForKey:key];
+	NSString *description=descriptions[key];
 	if(description) return description;
 
 	return key;
 }
 
-static NSInteger OrderKeys(id first,id second,void *context);
+static NSComparisonResult OrderKeys(id first,id second,void *context);
 
 -(NSArray *)descriptiveOrderingOfKeysInDictionary:(NSDictionary *)dict
 {
 	static NSDictionary *ordering=nil;
 	if(!ordering) ordering=[[NSDictionary alloc] initWithObjectsAndKeys:
-		[NSNumber numberWithInt:100],XADFileNameKey,
-		[NSNumber numberWithInt:101],XADCommentKey,
-		[NSNumber numberWithInt:102],XADFileSizeKey,
-		[NSNumber numberWithInt:103],XADCompressedSizeKey,
-		[NSNumber numberWithInt:104],XADCompressionNameKey,
+		@100,XADFileNameKey,
+		@101,XADCommentKey,
+		@102,XADFileSizeKey,
+		@103,XADCompressedSizeKey,
+		@104,XADCompressionNameKey,
 
-		[NSNumber numberWithInt:200],XADIsDirectoryKey,
-		[NSNumber numberWithInt:201],XADIsResourceForkKey,
-		[NSNumber numberWithInt:202],XADIsArchiveKey,
-		[NSNumber numberWithInt:203],XADIsHiddenKey,
-		[NSNumber numberWithInt:204],XADIsLinkKey,
-		[NSNumber numberWithInt:205],XADIsHardLinkKey,
-		[NSNumber numberWithInt:206],XADLinkDestinationKey,
-		[NSNumber numberWithInt:207],XADIsCharacterDeviceKey,
-		[NSNumber numberWithInt:208],XADIsBlockDeviceKey,
-		[NSNumber numberWithInt:209],XADDeviceMajorKey,
-		[NSNumber numberWithInt:210],XADDeviceMinorKey,
-		[NSNumber numberWithInt:211],XADIsFIFOKey,
-		[NSNumber numberWithInt:212],XADIsEncryptedKey,
-		[NSNumber numberWithInt:213],XADIsCorruptedKey,
+		@200,XADIsDirectoryKey,
+		@201,XADIsResourceForkKey,
+		@202,XADIsArchiveKey,
+		@203,XADIsHiddenKey,
+		@204,XADIsLinkKey,
+		@205,XADIsHardLinkKey,
+		@206,XADLinkDestinationKey,
+		@207,XADIsCharacterDeviceKey,
+		@208,XADIsBlockDeviceKey,
+		@209,XADDeviceMajorKey,
+		@210,XADDeviceMinorKey,
+		@211,XADIsFIFOKey,
+		@212,XADIsEncryptedKey,
+		@213,XADIsCorruptedKey,
 
-		[NSNumber numberWithInt:300],XADLastModificationDateKey,
-		[NSNumber numberWithInt:301],XADLastAccessDateKey,
-		[NSNumber numberWithInt:302],XADLastAttributeChangeDateKey,
-		[NSNumber numberWithInt:303],XADLastBackupDateKey,
-		[NSNumber numberWithInt:304],XADCreationDateKey,
+		@300,XADLastModificationDateKey,
+		@301,XADLastAccessDateKey,
+		@302,XADLastAttributeChangeDateKey,
+		@303,XADLastBackupDateKey,
+		@304,XADCreationDateKey,
 
-		[NSNumber numberWithInt:400],XADExtendedAttributesKey,
-		[NSNumber numberWithInt:401],XADFileTypeKey,
-		[NSNumber numberWithInt:402],XADFileCreatorKey,
-		[NSNumber numberWithInt:403],XADFinderFlagsKey,
-		[NSNumber numberWithInt:404],XADFinderInfoKey,
-		[NSNumber numberWithInt:404],XADPosixPermissionsKey,
-		[NSNumber numberWithInt:405],XADPosixUserKey,
-		[NSNumber numberWithInt:406],XADPosixGroupKey,
-		[NSNumber numberWithInt:407],XADPosixUserNameKey,
-		[NSNumber numberWithInt:408],XADPosixGroupNameKey,
-		[NSNumber numberWithInt:409],XADDOSFileAttributesKey,
-		[NSNumber numberWithInt:410],XADWindowsFileAttributesKey,
-		[NSNumber numberWithInt:411],XADAmigaProtectionBitsKey,
+		@400,XADExtendedAttributesKey,
+		@401,XADFileTypeKey,
+		@402,XADFileCreatorKey,
+		@403,XADFinderFlagsKey,
+		@404,XADFinderInfoKey,
+		@404,XADPosixPermissionsKey,
+		@405,XADPosixUserKey,
+		@406,XADPosixGroupKey,
+		@407,XADPosixUserNameKey,
+		@408,XADPosixGroupNameKey,
+		@409,XADDOSFileAttributesKey,
+		@410,XADWindowsFileAttributesKey,
+		@411,XADAmigaProtectionBitsKey,
 
-		[NSNumber numberWithInt:500],XADIndexKey,
-		[NSNumber numberWithInt:501],XADDataOffsetKey,
-		[NSNumber numberWithInt:502],XADDataLengthKey,
-		[NSNumber numberWithInt:503],XADSkipOffsetKey,
-		[NSNumber numberWithInt:504],XADSkipLengthKey,
+		@500,XADIndexKey,
+		@501,XADDataOffsetKey,
+		@502,XADDataLengthKey,
+		@503,XADSkipOffsetKey,
+		@504,XADSkipLengthKey,
 
-		[NSNumber numberWithInt:600],XADIsSolidKey,
-		[NSNumber numberWithInt:601],XADFirstSolidIndexKey,
-		[NSNumber numberWithInt:602],XADFirstSolidEntryKey,
-		[NSNumber numberWithInt:603],XADNextSolidIndexKey,
-		[NSNumber numberWithInt:604],XADNextSolidEntryKey,
-		[NSNumber numberWithInt:605],XADSolidObjectKey,
-		[NSNumber numberWithInt:606],XADSolidOffsetKey,
-		[NSNumber numberWithInt:607],XADSolidLengthKey,
+		@600,XADIsSolidKey,
+		@601,XADFirstSolidIndexKey,
+		@602,XADFirstSolidEntryKey,
+		@603,XADNextSolidIndexKey,
+		@604,XADNextSolidEntryKey,
+		@605,XADSolidObjectKey,
+		@606,XADSolidOffsetKey,
+		@607,XADSolidLengthKey,
 
-		[NSNumber numberWithInt:700],XADArchiveNameKey,
-		[NSNumber numberWithInt:701],XADVolumesKey,
-		[NSNumber numberWithInt:702],XADDiskLabelKey,
+		@700,XADArchiveNameKey,
+		@701,XADVolumesKey,
+		@702,XADDiskLabelKey,
 		nil];
 
 	return [[dict allKeys] sortedArrayUsingFunction:OrderKeys context:ordering];
 }
 
-static NSInteger OrderKeys(id first,id second,void *context)
+static NSComparisonResult OrderKeys(id first,id second,void *context)
 {
 	NSDictionary *ordering=context;
-	NSNumber *firstorder=[ordering objectForKey:first];
-	NSNumber *secondorder=[ordering objectForKey:second];
+	NSNumber *firstorder=ordering[first];
+	NSNumber *secondorder=ordering[second];
 
 	if(firstorder&&secondorder) return [firstorder compare:secondorder];
 	else if(firstorder) return NSOrderedAscending;
@@ -360,7 +360,6 @@ NSString *XADHumanReadableObject(id object)
 	else if([object isKindOfClass:[NSValue class]]) return GNUSTEPKludge_HumanReadableValue(object);
 	#endif
 	else return [object description];
-
 }
 
 NSString *XADHumanReadableDate(NSDate *date)
@@ -407,7 +406,7 @@ NSString *XADHumanReadableArray(NSArray *array)
 
 	for(int i=0;i<count;i++)
 	{
-		id value=[array objectAtIndex:i];
+		id value=array[i];
 		[labels addObject:[NSString stringWithFormat:@"%d",i]];
 		[values addObject:XADHumanReadableObject(value)];
 	}
@@ -425,7 +424,7 @@ NSString *XADHumanReadableDictionary(NSDictionary *dict)
 	NSString *key;
 	while((key=[enumerator nextObject]))
 	{
-		id value=[dict objectForKey:key];
+		id value=dict[key];
 		[labels addObject:key];
 		[values addObject:XADHumanReadableObject(value)];
 	}
@@ -439,8 +438,8 @@ NSString *XADHumanReadableList(NSArray *labels,NSArray *values)
 	NSInteger count=[labels count];
 	for(int i=0;i<count;i++)
 	{
-		NSString *label=[labels objectAtIndex:i];
-		int len=(int)[label length];
+		NSString *label=labels[i];
+		int len=[label length];
 
 		if(len>maxlen) maxlen=len;
 	}
@@ -448,9 +447,9 @@ NSString *XADHumanReadableList(NSArray *labels,NSArray *values)
 	NSMutableString *string=[NSMutableString string];
 	for(int i=0;i<count;i++)
 	{
-		NSString *label=[labels objectAtIndex:i];
-		NSString *value=[values objectAtIndex:i];
-		int len=(int)[label length];
+		NSString *label=labels[i];
+		NSString *value=values[i];
+		int len=[label length];
 
 		[string appendString:label];
 		[string appendString:@": "];
@@ -470,7 +469,7 @@ NSString *XADIndentTextWithSpaces(NSString *text,int spaces)
 	if([text rangeOfString:@"\n"].location==NSNotFound) return text;
 
 	NSMutableString *res=[NSMutableString string];
-	int length=(int)[text length];
+	int length=[text length];
 	for(int i=0;i<length;i++)
 	{
 		unichar c=[text characterAtIndex:i];

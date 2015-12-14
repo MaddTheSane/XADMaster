@@ -6,11 +6,10 @@
 	NSDictionary *resources;
 }
 
-+(XADResourceFork *)resourceForkWithHandle:(CSHandle *)handle;
-+(XADResourceFork *)resourceForkWithHandle:(CSHandle *)handle error:(XADError *)errorptr;
++(instancetype)resourceForkWithHandle:(CSHandle *)handle;
++(instancetype)resourceForkWithHandle:(CSHandle *)handle error:(XADError *)errorptr;
 
--(id)init;
--(void)dealloc;
+-(instancetype)init NS_DESIGNATED_INITIALIZER;
 
 -(void)parseFromHandle:(CSHandle *)handle;
 -(NSData *)resourceDataForType:(uint32_t)type identifier:(int)identifier;

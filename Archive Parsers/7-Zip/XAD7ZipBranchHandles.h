@@ -9,11 +9,10 @@
 	uint32_t baseoffset;
 }
 
--(id)initWithHandle:(CSHandle *)handle;
--(id)initWithHandle:(CSHandle *)handle propertyData:(NSData *)propertydata;
--(id)initWithHandle:(CSHandle *)handle length:(off_t)length;
--(id)initWithHandle:(CSHandle *)handle length:(off_t)length propertyData:(NSData *)propertydata;
--(void)dealloc;
+-(instancetype)initWithHandle:(CSHandle *)handle;
+-(instancetype)initWithHandle:(CSHandle *)handle propertyData:(NSData *)propertydata;
+-(instancetype)initWithHandle:(CSHandle *)handle length:(off_t)length;
+-(instancetype)initWithHandle:(CSHandle *)handle length:(off_t)length propertyData:(NSData *)propertydata;
 
 -(void)resetBlockStream;
 -(int)produceBlockAtOffset:(off_t)pos;

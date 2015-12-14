@@ -87,7 +87,7 @@
 {
 	if(!num) return 0;
 
-	unsigned int len=(unsigned int)[backingdata length];
+	unsigned long len=[backingdata length];
 	if(memorypos==len) return 0;
 	if(memorypos+num>len) num=(int)(len-memorypos);
 	memcpy(buffer,(uint8_t *)[backingdata bytes]+memorypos,num);
@@ -100,7 +100,7 @@
 	if(![backingdata isKindOfClass:[NSMutableData class]]) [self _raiseNotSupported:_cmd];
 	NSMutableData *mbackingdata=(NSMutableData *)backingdata;
 
-	if(memorypos+num>[mbackingdata length]) [mbackingdata setLength:memorypos+num];
+	if(memorypos+num>[mbackingdata length]) [mbackingdata setLength:(long)memorypos+num];
 	memcpy((uint8_t *)[mbackingdata mutableBytes]+memorypos,buffer,num);
 	memorypos+=num;
 }
@@ -116,18 +116,18 @@
 
 -(NSData *)readDataOfLength:(int)length
 {
-	unsigned int totallen=(unsigned int)[backingdata length];
+	unsigned long totallen=[backingdata length];
 	if(memorypos+length>totallen) [self _raiseEOF];
-	NSData *subbackingdata=[backingdata subdataWithRange:NSMakeRange(memorypos,length)];
+	NSData *subbackingdata=[backingdata subdataWithRange:NSMakeRange((long)memorypos,length)];
 	memorypos+=length;
 	return subbackingdata;
 }
 
 -(NSData *)readDataOfLengthAtMost:(int)length;
 {
-	unsigned int totallen=(unsigned int)[backingdata length];
+	unsigned long totallen=[backingdata length];
 	if(memorypos+length>totallen) length=(int)(totallen-memorypos);
-	NSData *subbackingdata=[backingdata subdataWithRange:NSMakeRange(memorypos,length)];
+	NSData *subbackingdata=[backingdata subdataWithRange:NSMakeRange((long)memorypos,length)];
 	memorypos+=length;
 	return subbackingdata;
 }

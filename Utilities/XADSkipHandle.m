@@ -89,7 +89,7 @@ static off_t ActualOffsetToSkip(XADSkipHandle *self,off_t pos)
 
 
 
--(id)initWithHandle:(CSHandle *)handle
+-(instancetype)initWithHandle:(CSHandle *)handle
 {
 	if((self=[super initWithName:[handle name]]))
 	{
@@ -101,7 +101,7 @@ static off_t ActualOffsetToSkip(XADSkipHandle *self,off_t pos)
 	return self;
 }
 
--(id)initAsCopyOf:(XADSkipHandle *)other
+-(instancetype)initAsCopyOf:(XADSkipHandle *)other
 {
 	if((self=[super initAsCopyOf:other]))
 	{
@@ -190,21 +190,21 @@ static off_t ActualOffsetToSkip(XADSkipHandle *self,off_t pos)
 	int index=FindIndexOfRegionContainingActualOffset(self,pos);
 	if(pos>=ActualGapStart(self,index)) [parent seekToFileOffset:pos=ActualStart(self,++index)];
 
-	off_t total=0;
+	int total=0;
 	for(;;)
 	{
 		off_t gap=ActualGapStart(self,index);
 
 		if(num-total<gap-pos)
 		{
-			total+=[parent readAtMost:(int)(num-total) toBuffer:buffer+total];
-			return (int)total;
+			total+=[parent readAtMost:num-total toBuffer:buffer+total];
+			return total;
 		}
 
 		int actual=[parent readAtMost:(int)(gap-pos) toBuffer:buffer+total];
 		total+=actual;
 
-		if(actual!=gap-pos) return (int)total;
+		if(actual!=gap-pos) return total;
 
 		[parent seekToFileOffset:pos=ActualStart(self,++index)];
 	}

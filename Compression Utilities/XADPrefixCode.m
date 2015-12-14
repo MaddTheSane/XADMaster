@@ -139,11 +139,11 @@ maximumLength:(int)maxlength shortestCodeIsZeros:(BOOL)zeros
 	maximumLength:maxlength shortestCodeIsZeros:zeros] autorelease];
 }
 
--(id)init
+-(instancetype)init
 {
 	if((self=[super init]))
 	{
-		tree=malloc(sizeof(int)*2);
+		tree=malloc(sizeof(XADCodeTreeNode));
 		SetEmptyNode(self,0);
 		numentries=1;
 		minlength=INT_MAX;
@@ -157,7 +157,7 @@ maximumLength:(int)maxlength shortestCodeIsZeros:(BOOL)zeros
 	return self;
 }
 
--(id)initWithStaticTable:(int (*)[2])statictable
+-(instancetype)initWithStaticTable:(int (*)[2])statictable
 {
 	if((self=[super init]))
 	{
@@ -170,7 +170,7 @@ maximumLength:(int)maxlength shortestCodeIsZeros:(BOOL)zeros
 	return self;
 }
 
--(id)initWithLengths:(const int *)lengths numberOfSymbols:(int)numsymbols
+-(instancetype)initWithLengths:(const int *)lengths numberOfSymbols:(int)numsymbols
 maximumLength:(int)maxcodelength shortestCodeIsZeros:(BOOL)zeros
 {
 	if((self=[self init]))
@@ -230,7 +230,7 @@ maximumLength:(int)maxcodelength shortestCodeIsZeros:(BOOL)zeros
 	if(length<minlength) minlength=length;
 
 	repeatpos=length-1-repeatpos;
-	if(repeatpos==0||(repeatpos>=0&&(((code>>(repeatpos-1))&3)==0||((code>>(repeatpos-1))&3)==3)))
+	if(repeatpos==0 || (repeatpos>=0 && (((code>>(repeatpos-1))&3)==0 || ((code>>(repeatpos-1))&3)==3)))
 	[NSException raise:NSInvalidArgumentException format:@"Invalid repeat position"];
 
 	int lastnode=0;
@@ -326,7 +326,7 @@ static uint32_t ReverseN(uint32_t val,int length)
 
 -(void)_pushNode
 {
-	[stack addObject:[NSNumber numberWithInt:currnode]];
+	[stack addObject:@(currnode)];
 }
 
 -(void)_popNode

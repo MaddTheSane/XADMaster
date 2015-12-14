@@ -5,6 +5,11 @@
 #import "Progress.h"
 
 @implementation XADUnarchiver
+@synthesize delegate;
+@synthesize destination;
+@synthesize macResourceForkStyle = forkstyle;
+@synthesize updateInterval = updateinterval;
+@synthesize preservesPermissions = preservepermissions;
 
 +(XADUnarchiver *)unarchiverForArchiveParser:(XADArchiveParser *)archiveparser
 {
@@ -23,7 +28,7 @@
 	return [[[self alloc] initWithArchiveParser:archiveparser] autorelease];
 }
 
--(id)initWithArchiveParser:(XADArchiveParser *)archiveparser
+-(instancetype)initWithArchiveParser:(XADArchiveParser *)archiveparser
 {
 	if((self=[super init]))
 	{
@@ -51,32 +56,6 @@
 }
 
 -(XADArchiveParser *)archiveParser { return parser; }
-
-
--(id)delegate { return delegate; }
-
--(void)setDelegate:(id)newdelegate { delegate=newdelegate; }
-
--(NSString *)destination { return destination; }
-
--(void)setDestination:(NSString *)destpath
-{
-	[destination autorelease];
-	destination=[destpath retain];
-}
-
--(int)macResourceForkStyle { return forkstyle; }
-
--(void)setMacResourceForkStyle:(int)style { forkstyle=style; }
-
--(BOOL)preservesPermissions { return preservepermissions; }
-
--(void)setPreserevesPermissions:(BOOL)preserveflag { preservepermissions=preserveflag; }
-
--(double)updateInterval { return updateinterval; }
-
--(void)setUpdateInterval:(double)interval { updateinterval=interval; }
-
 
 
 
@@ -143,10 +122,10 @@
 {
 	NSAutoreleasePool *pool=[NSAutoreleasePool new];
 
-	NSNumber *dirnum=[dict objectForKey:XADIsDirectoryKey];
-	NSNumber *linknum=[dict objectForKey:XADIsLinkKey];
-	NSNumber *resnum=[dict objectForKey:XADIsResourceForkKey];
-	NSNumber *archivenum=[dict objectForKey:XADIsArchiveKey];
+	NSNumber *dirnum=dict[XADIsDirectoryKey];
+	NSNumber *linknum=dict[XADIsLinkKey];
+	NSNumber *resnum=dict[XADIsResourceForkKey];
+	NSNumber *archivenum=dict[XADIsArchiveKey];
 	BOOL isdir=dirnum&&[dirnum boolValue];
 	BOOL islink=linknum&&[linknum boolValue];
 	BOOL isres=resnum&&[resnum boolValue];
@@ -155,7 +134,7 @@
 	// If we were not given a path, pick one ourselves.
 	if(!path)
 	{
-		XADPath *name=[dict objectForKey:XADFileNameKey];
+		XADPath *name=dict[XADFileNameKey];
 		NSString *namestring=[name sanitizedPathString];
 
 		if(destination) path=[destination stringByAppendingPathComponent:namestring];
@@ -274,20 +253,20 @@
 
 
 
-static NSInteger SortDirectoriesByDepthAndResource(id entry1,id entry2,void *context)
+static NSComparisonResult SortDirectoriesByDepthAndResource(id entry1,id entry2,void *context)
 {
-	NSDictionary *dict1=[entry1 objectAtIndex:1];
-	NSDictionary *dict2=[entry2 objectAtIndex:1];
+	NSDictionary *dict1=entry1[1];
+	NSDictionary *dict2=entry2[1];
 
-	XADPath *path1=[dict1 objectForKey:XADFileNameKey];
-	XADPath *path2=[dict2 objectForKey:XADFileNameKey];
+	XADPath *path1=dict1[XADFileNameKey];
+	XADPath *path2=dict2[XADFileNameKey];
 	int depth1=[path1 depth];
 	int depth2=[path2 depth];
 	if(depth1>depth2) return NSOrderedAscending;
 	else if(depth1<depth2) return NSOrderedDescending;
 
-	NSNumber *resnum1=[dict1 objectForKey:XADIsResourceForkKey];
-	NSNumber *resnum2=[dict2 objectForKey:XADIsResourceForkKey];
+	NSNumber *resnum1=dict1[XADIsResourceForkKey];
+	NSNumber *resnum2=dict2[XADIsResourceForkKey];
 	BOOL isres1=resnum1&&[resnum1 boolValue];
 	BOOL isres2=resnum2&&[resnum2 boolValue];
 	if(!isres1&&isres2) return NSOrderedAscending;
@@ -315,9 +294,9 @@ static NSInteger SortDirectoriesByDepthAndResource(id entry1,id entry2,void *con
 	NSArray *entry;
 	while((entry=[enumerator nextObject]))
 	{
-		NSString *path=[entry objectAtIndex:0];
-		NSString *linkdest=[entry objectAtIndex:1];
-		NSDictionary *dict=[entry objectAtIndex:2];
+		NSString *path=entry[0];
+		NSString *linkdest=entry[1];
+		NSDictionary *dict=entry[2];
 
 		XADError error;
 
@@ -341,8 +320,8 @@ static NSInteger SortDirectoriesByDepthAndResource(id entry1,id entry2,void *con
 	NSArray *entry;
 	while((entry=[enumerator nextObject]))
 	{
-		NSString *path=[entry objectAtIndex:0];
-		NSDictionary *dict=[entry objectAtIndex:1];
+		NSString *path=entry[0];
+		NSDictionary *dict=entry[1];
 
 		XADError error=[self _updateFileAttributesAtPath:path forEntryWithDictionary:dict deferDirectories:NO];
 		if(error) return error;
@@ -430,7 +409,7 @@ resourceForkDictionary:(NSDictionary *)forkdict wantChecksum:(BOOL)checksum erro
 		}
 		[fh close];
 
-		[deferredlinks addObject:[NSArray arrayWithObjects:destpath,linkdest,dict,nil]];
+		[deferredlinks addObject:@[destpath,linkdest,dict]];
 		return XADNoError;
 	}
 	else
@@ -471,7 +450,7 @@ resourceForkDictionary:(NSDictionary *)forkdict wantChecksum:(BOOL)checksum erro
 	@catch(id e) { return XADOpenFileError; }
 
 	off_t ressize=0;
-	NSNumber *sizenum=[dict objectForKey:XADFileSizeKey];
+	NSNumber *sizenum=dict[XADFileSizeKey];
 	if(sizenum) ressize=[sizenum longLongValue];
 
 	NSDictionary *extattrs=[parser extendedAttributesForDictionary:dict];
@@ -479,7 +458,8 @@ resourceForkDictionary:(NSDictionary *)forkdict wantChecksum:(BOOL)checksum erro
 	@try
 	{
 		// TODO: Should this function handle exceptions itself?
-		[XADAppleDouble writeAppleDoubleHeaderToHandle:fh resourceForkSize:(int)ressize extendedAttributes:extattrs];
+		[XADAppleDouble writeAppleDoubleHeaderToHandle:fh resourceForkSize:(int)ressize
+		extendedAttributes:extattrs];
 	}
 	@catch(id e) { return [XADException parseException:e]; }
 
@@ -499,10 +479,10 @@ deferDirectories:(BOOL)defer
 {
 	if(defer)
 	{
-		NSNumber *dirnum=[dict objectForKey:XADIsDirectoryKey];
+		NSNumber *dirnum=dict[XADIsDirectoryKey];
 		if(dirnum&&[dirnum boolValue])
 		{
-			[deferreddirectories addObject:[NSArray arrayWithObjects:path,dict,nil]];
+			[deferreddirectories addObject:@[path,dict]];
 			return XADNoError;
 		}
 	}
@@ -537,10 +517,13 @@ deferDirectories:(BOOL)defer
 		}
 	}
 
-	if([manager createDirectoryAtPath:path withIntermediateDirectories:NO attributes:nil error:NULL])
-        return XADNoError;
-	else
-        return XADMakeDirectoryError;
+	#if MAC_OS_X_VERSION_MIN_REQUIRED>=1050
+	if([manager createDirectoryAtPath:path
+	withIntermediateDirectories:NO attributes:nil error:NULL]) return XADNoError;
+	#else
+	if([manager createDirectoryAtPath:path attributes:nil]) return XADNoError;
+	#endif
+	else return XADMakeDirectoryError;
 }
 
 
@@ -574,7 +557,7 @@ outputTarget:(id)target selector:(SEL)selector argument:(id)argument
 		fileFraction:0 estimatedTotalFraction:[[parser handle] estimatedProgress]];
 
 		// Try to find the size of this entry.
-		NSNumber *sizenum=[dict objectForKey:XADFileSizeKey];
+		NSNumber *sizenum=dict[XADFileSizeKey];
 		off_t size=0;
 		if(sizenum)
 		{
@@ -629,7 +612,7 @@ outputTarget:(id)target selector:(SEL)selector argument:(id)argument
 
 		// Check if the file has already been marked as corrupt, and
 		// give up without testing checksum if so.
-		NSNumber *iscorrupt=[dict objectForKey:XADIsCorruptedKey];
+		NSNumber *iscorrupt=dict[XADIsCorruptedKey];
 		if(iscorrupt&&[iscorrupt boolValue]) return XADDecrunchError;
 
 		// If the file has a checksum, check it. Otherwise, if it has a
@@ -660,7 +643,7 @@ outputTarget:(id)target selector:(SEL)selector argument:(id)argument
 -(NSString *)adjustPathString:(NSString *)path forEntryWithDictionary:(NSDictionary *)dict
 {
 	// If we are unpacking a resource fork, we may need to modify the path.
-	NSNumber *resnum=[dict objectForKey:XADIsResourceForkKey];
+	NSNumber *resnum=dict[XADIsResourceForkKey];
 	if(resnum&&[resnum boolValue])
 	{
 		switch(forkstyle)
@@ -680,6 +663,9 @@ outputTarget:(id)target selector:(SEL)selector argument:(id)argument
 				return [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:
 				[@"%" stringByAppendingString:[path lastPathComponent]]];
 			break;
+				
+			default:
+				break;
 		}
 	}
 	return path;
@@ -710,7 +696,7 @@ outputTarget:(id)target selector:(SEL)selector argument:(id)argument
 	{
 		NSString *path=[self unarchiver:unarchiver pathForExtractingEntryWithDictionary:dict];
 		if(path) *pathptr=path;
-		return [self unarchiver:unarchiver shouldExtractEntryWithDictionary:dict to:*pathptr];
+		return [(NSObject<XADUnarchiverDelegate>*)self unarchiver:unarchiver shouldExtractEntryWithDictionary:dict to:*pathptr];
 	}
 	else return YES;
 }
@@ -730,10 +716,10 @@ outputTarget:(id)target selector:(SEL)selector argument:(id)argument
 	// Kludge to handle old-style interface.
 	if([self respondsToSelector:@selector(unarchiver:linkDestinationForEntryWithDictionary:from:)])
 	{
-		return [self unarchiver:unarchiver linkDestinationForEntryWithDictionary:
+		return [(NSObject<XADUnarchiverDelegate>*)self unarchiver:unarchiver linkDestinationForEntryWithDictionary:
 		[NSMutableDictionary dictionaryWithObjectsAndKeys:
 			link,XADLinkDestinationKey,
-			[NSNumber numberWithBool:YES],XADIsLinkKey,
+			@YES,XADIsLinkKey,
 		nil] from:path];
 	}
 	else return [link string];

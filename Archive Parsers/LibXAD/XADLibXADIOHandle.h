@@ -137,13 +137,12 @@ void xadIODropBitsHigh(struct xadInOut *io, xadUINT8 bits);
 	struct xadInOut iostruct;
 }
 
--(id)initWithHandle:(CSHandle *)handle;
--(id)initWithHandle:(CSHandle *)handle length:(off_t)outlength;
--(void)dealloc;
+-(instancetype)initWithHandle:(CSHandle *)handle;
+-(instancetype)initWithHandle:(CSHandle *)handle length:(off_t)outlength;
 
--(off_t)fileSize;
--(off_t)offsetInFile;
--(BOOL)atEndOfFile;
+@property (readonly) off_t fileSize;
+@property (readonly) off_t offsetInFile;
+@property (readonly) BOOL atEndOfFile;
 
 -(void)seekToFileOffset:(off_t)offs;
 -(void)seekToEndOfFile;

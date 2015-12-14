@@ -8,7 +8,7 @@
 +(BOOL)recognizeFileWithHandle:(CSHandle *)handle firstBytes:(NSData *)data name:(NSString *)name;
 {
 	const uint8_t *bytes=[data bytes];
-	int length=(int)[data length];
+	int length=[data length];
 
 	if(length<12) return NO;
 	if(bytes[0]!=0x4d||bytes[1]!=0x5a) return NO;
@@ -35,7 +35,7 @@
 +(BOOL)recognizeFileWithHandle:(CSHandle *)handle firstBytes:(NSData *)data name:(NSString *)name;
 {
 	const uint8_t *bytes=[data bytes];
-	int length=(int)[data length];
+	int length=[data length];
 
 	if(length<26) return NO;
 	if(bytes[0]!=0x4d||bytes[1]!=0x5a) return NO;
@@ -61,7 +61,7 @@
 +(BOOL)recognizeFileWithHandle:(CSHandle *)handle firstBytes:(NSData *)data name:(NSString *)name;
 {
 	const uint8_t *bytes=[data bytes];
-	int length=(int)[data length];
+	int length=[data length];
 
 	if(length<4) return NO;
 	if(CSUInt32BE(bytes)=='Joy!') return YES;
@@ -112,10 +112,21 @@
 
 +(NSArray *)volumesForHandle:(CSHandle *)handle firstBytes:(NSData *)data name:(NSString *)name
 {
-	return [self scanForVolumesWithFilename:name
+	NSArray *volumes=[self scanForVolumesWithFilename:name
 	regex:[XADRegex regexWithPattern:[NSString stringWithFormat:@"^%@\\.(zip|z[0-9]{2})$",
 		[[name stringByDeletingPathExtension] escapedPattern]] options:REG_ICASE]
 	firstFileExtension:@"z01"];
+
+	if([volumes count]>1) return volumes;
+
+	volumes=[self scanForVolumesWithFilename:name
+	regex:[XADRegex regexWithPattern:[NSString stringWithFormat:@"^%@(\\.[0-9]+|())\\.zip$",
+		[[name stringByDeletingPathExtension] escapedPattern]] options:REG_ICASE]
+	firstFileExtension:nil];
+
+	if([volumes count]>1) return volumes;
+
+	return nil;
 }
 
 -(NSString *)formatName { return @"Zip"; }

@@ -46,14 +46,14 @@ static NSMutableArray *ArrayWithLength(int length)
 
 static inline void SetObjectEntryInArray(NSArray *array,int index,id obj,NSString *key)
 {
-	NSMutableDictionary *dict=[array objectAtIndex:index];
-	if(obj) [dict setObject:obj forKey:key];
+	NSMutableDictionary *dict=array[index];
+	if(obj) dict[key] = obj;
 	else [dict removeObjectForKey:key];
 }
 
 static inline void SetNumberEntryInArray(NSArray *array,int index,uint64_t value,NSString *key)
 {
-	[[array objectAtIndex:index] setObject:[NSNumber numberWithUnsignedLongLong:value] forKey:key];
+	array[index][key] = @(value);
 }
 
 static inline void SkipEntry(CSHandle *handle) { [handle skipBytes:ReadNumber(handle)]; }
@@ -78,7 +78,7 @@ static void FindAttribute(CSHandle *handle,int attribute)
 +(BOOL)recognizeFileWithHandle:(CSHandle *)handle firstBytes:(NSData *)data name:(NSString *)name
 {
 	const uint8_t *bytes=[data bytes];
-	int length=(int)[data length];
+	int length=[data length];
 
 	if(length<32) return NO;
 	return Is7ZipSignature(bytes);
@@ -93,7 +93,7 @@ static void FindAttribute(CSHandle *handle,int attribute)
 	{
 		return [self scanForVolumesWithFilename:name
 		regex:[XADRegex regexWithPattern:[NSString stringWithFormat:@"^%@\\.([0-9]+)$",
-			[[matches objectAtIndex:1] escapedPattern]] options:REG_ICASE]
+			[matches[1] escapedPattern]] options:REG_ICASE]
 		firstFileExtension:nil];
 	}
 
@@ -121,19 +121,51 @@ static void FindAttribute(CSHandle *handle,int attribute)
 
 	startoffset=[handle offsetInFile];
 
-	[handle skipBytes:12];
+	[handle skipBytes:8];
 
+	uint32_t somecrc=[handle readUInt32LE];
 	off_t nextheaderoffs=[handle readUInt64LE];
-	//off_t nextheadersize=[handle readUInt64LE];
+	off_t nextheadersize=[handle readUInt64LE];
+	uint32_t nextheadercrc=[handle readUInt32LE];
 
-	[handle seekToFileOffset:nextheaderoffs+32+startoffset];
+	if(somecrc==0 && nextheaderoffs==0 && nextheadersize==0 && nextheadercrc==0)
+	{
+		[handle seekToEndOfFile];
+		[handle skipBytes:-1];
+		uint8_t endbyte=[handle readUInt8];
+		if(endbyte!=0) [XADException raiseIllegalDataException];
+
+		[handle skipBytes:-2];
+		uint8_t lastbyte=[handle readUInt8];
+
+		for(int i=0;;i++)
+		{
+			if(i>=512) [XADException raiseIllegalDataException];
+			[handle skipBytes:-2];
+			uint8_t byte=[handle readUInt8];
+
+			if(byte==1 && lastbyte==4) break; // Header, MainStreamsInfo
+			if(byte==23 && lastbyte==6) break; // EncodedHeader, PackInfo
+
+			lastbyte=byte;
+		}
+
+		[handle skipBytes:-1];
+	}
+	else
+	{
+		[handle seekToFileOffset:startoffset+32+nextheaderoffs];
+	}
 
 	CSHandle *fh=handle;
 
 	for(;;)
 	{
 		int type=(int)ReadNumber(fh);
-		if(type==1) break; // Header
+		if(type==1) // Header
+		{
+			break;
+		}
 		else if(type==23) // EncodedHeader
 		{
 			NSDictionary *streams=[self parseStreamsForHandle:fh];
@@ -141,7 +173,10 @@ static void FindAttribute(CSHandle *handle,int attribute)
 			//int folderindex=[[dict objectForKey:@"FolderIndex"] intValue];
 			fh=[self handleForStreams:streams folderIndex:0];
 		}
-		else [XADException raiseIllegalDataException];
+		else
+		{
+			[XADException raiseIllegalDataException];
+		}
 	}
 
 	NSDictionary *additionalstreams=nil;
@@ -179,58 +214,58 @@ static void FindAttribute(CSHandle *handle,int attribute)
 
 	end: (void)0;
 
-	NSEnumerator *substreamenumerator=[[mainstreams objectForKey:@"SubStreams"] objectEnumerator];
+	NSEnumerator *substreamenumerator=[mainstreams[@"SubStreams"] objectEnumerator];
 
-	int numfiles=(int)[files count];
+	int numfiles=[files count];
 	for(int i=0;i<numfiles;i++)
 	{
 		if(![self shouldKeepParsing]) break;
 
-		NSMutableDictionary *file=[files objectAtIndex:i];
+		NSMutableDictionary *file=files[i];
 
-		if([file objectForKey:@"7zIsEmptyStream"])
+		if(file[@"7zIsEmptyStream"])
 		{
-			if([file objectForKey:@"7zIsEmptyFile"])
+			if(file[@"7zIsEmptyFile"])
 			{
-				[file setObject:[NSNumber numberWithInt:0] forKey:XADFileSizeKey];
-				[file setObject:[NSNumber numberWithInt:0] forKey:XADCompressedSizeKey];
+				file[XADFileSizeKey] = @0;
+				file[XADCompressedSizeKey] = @0;
 			}
 			else
 			{
-				[file setObject:[NSNumber numberWithBool:YES] forKey:XADIsDirectoryKey];
+				file[XADIsDirectoryKey] = @YES;
 			}
 		}
 		else
 		{
 			NSDictionary *substream=[substreamenumerator nextObject];
 
-			NSNumber *sizeobj=[substream objectForKey:@"Size"];
-			int folderindex=[[substream objectForKey:@"FolderIndex"] intValue];
-			NSDictionary *folder=[[mainstreams objectForKey:@"Folders"] objectAtIndex:folderindex];
+			NSNumber *sizeobj=substream[@"Size"];
+			int folderindex=[substream[@"FolderIndex"] intValue];
+			NSDictionary *folder=mainstreams[@"Folders"][folderindex];
 			off_t compsize=(double)[self compressedSizeForFolder:folder]*[sizeobj doubleValue]
 			/(double)[self uncompressedSizeForFolder:folder];
 
-			[file setObject:sizeobj forKey:XADFileSizeKey];
-			[file setObject:sizeobj forKey:XADSolidLengthKey];
-			[file setObject:[NSNumber numberWithLongLong:compsize] forKey:XADCompressedSizeKey];
-			[file setObject:[substream objectForKey:@"StartOffset"] forKey:XADSolidOffsetKey];
-			[file setObject:[self XADStringWithString:[self compressorNameForFolder:folder]] forKey:XADCompressionNameKey];
-			[file setObject:[substream objectForKey:@"CRC"] forKey:@"7zCRC32"];
-			if([self isFolderEncrypted:folder]) [file setObject:[NSNumber numberWithBool:YES] forKey:XADIsEncryptedKey];
+			file[XADFileSizeKey] = sizeobj;
+			file[XADSolidLengthKey] = sizeobj;
+			file[XADCompressedSizeKey] = @(compsize);
+			file[XADSolidOffsetKey] = substream[@"StartOffset"];
+			file[XADCompressionNameKey] = [self XADStringWithString:[self compressorNameForFolder:folder]];
+			file[@"7zCRC32"] = substream[@"CRC"];
+			if([self isFolderEncrypted:folder]) file[XADIsEncryptedKey] = @YES;
 
-			[file setObject:[substream objectForKey:@"FolderIndex"] forKey:XADSolidObjectKey];
+			file[XADSolidObjectKey] = substream[@"FolderIndex"];
 		}
 
 		// UNIX permissions kludge
-		uint32_t winattrs=[[file objectForKey:XADWindowsFileAttributesKey] unsignedIntValue];
+		uint32_t winattrs=[file[XADWindowsFileAttributesKey] unsignedIntValue];
 		if(winattrs&0x8000)
 		{
 			int perms=winattrs>>16;
-			[file setObject:[NSNumber numberWithInt:perms] forKey:XADPosixPermissionsKey];
-			if((perms&0xf000)==0xa000) [file setObject:[NSNumber numberWithBool:YES] forKey:XADIsLinkKey];
+			file[XADPosixPermissionsKey] = @(perms);
+			if((perms&0xf000)==0xa000) file[XADIsLinkKey] = @YES;
 		}
 
-		if(![file objectForKey:@"7zIsAntiFile"]) [self addEntryWithDictionary:file];
+		if(!file[@"7zIsAntiFile"]) [self addEntryWithDictionary:file];
 	}
 }
 
@@ -255,7 +290,7 @@ static void FindAttribute(CSHandle *handle,int attribute)
 
 				emptystreams=[NSMutableArray array];
 				for(int i=0;i<numfiles;i++)
-				if([[files objectAtIndex:i] objectForKey:@"7zIsEmptyStream"]) [emptystreams addObject:[files objectAtIndex:i]];
+				if(files[i][@"7zIsEmptyStream"]) [emptystreams addObject:files[i]];
 			break;
 
 			case 15: // EmptyFile
@@ -301,13 +336,13 @@ static void FindAttribute(CSHandle *handle,int attribute)
 
 -(void)parseBitVectorForHandle:(CSHandle *)handle array:(NSArray *)array key:(NSString *)key
 {
-	NSNumber *yes=[NSNumber numberWithBool:YES];
-	int num=(int)[array count];
-	int byte = 0;
+	NSNumber *yes=@YES;
+	int num=[array count];
+	int byte;
 	for(int i=0;i<num;i++)
 	{
 		if(i%8==0) byte=[handle readUInt8];
-		if(byte&(0x80>>i%8)) [[array objectAtIndex:i] setObject:yes forKey:key];
+		if(byte&(0x80>>i%8)) array[i][key] = yes;
 	}
 }
 
@@ -316,7 +351,7 @@ static void FindAttribute(CSHandle *handle,int attribute)
 	if([handle readUInt8]) return [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0,num)];
 
 	NSMutableIndexSet *indexes=[NSMutableIndexSet indexSet];
-	int byte = 0;
+	int byte;
 	for(int i=0;i<num;i++)
 	{
 		if(i%8==0) byte=[handle readUInt8];
@@ -327,7 +362,7 @@ static void FindAttribute(CSHandle *handle,int attribute)
 
 -(void)parseDatesForHandle:(CSHandle *)handle array:(NSMutableArray *)array key:(NSString *)key
 {
-	NSIndexSet *indexes=[self parseDefintionVectorForHandle:handle numberOfElements:(int)[array count]];
+	NSIndexSet *indexes=[self parseDefintionVectorForHandle:handle numberOfElements:[array count]];
 
 	int external=[handle readUInt8];
 	if(external!=0) [XADException raiseNotSupportedException]; // TODO: figure out what to do
@@ -336,15 +371,15 @@ static void FindAttribute(CSHandle *handle,int attribute)
 	{
 		uint32_t low=[handle readUInt32LE];
 		uint32_t high=[handle readUInt32LE];
-		SetObjectEntryInArray(array,(int)i,[NSDate XADDateWithWindowsFileTimeLow:low high:high],key);
+		SetObjectEntryInArray(array,i,[NSDate XADDateWithWindowsFileTimeLow:low high:high],key);
 	}
 }
 
 -(void)parseCRCsForHandle:(CSHandle *)handle array:(NSMutableArray *)array
 {
-	NSIndexSet *indexes=[self parseDefintionVectorForHandle:handle numberOfElements:(int)[array count]];
+	NSIndexSet *indexes=[self parseDefintionVectorForHandle:handle numberOfElements:[array count]];
 	for(NSInteger i=[indexes firstIndex];i!=NSNotFound;i=[indexes indexGreaterThanIndex:i])
-	SetNumberEntryInArray(array,(int)i,[handle readUInt32LE],@"CRC");
+	SetNumberEntryInArray(array,i,[handle readUInt32LE],@"CRC");
 }
 
 -(void)parseNamesForHandle:(CSHandle *)handle array:(NSMutableArray *)array
@@ -352,7 +387,7 @@ static void FindAttribute(CSHandle *handle,int attribute)
 	int external=[handle readUInt8];
 	if(external!=0) [XADException raiseNotSupportedException]; // TODO: figure out what to do
 
-	int numnames=(int)[array count];
+	int numnames=[array count];
 	for(int i=0;i<numnames;i++)
 	{
 		NSMutableString *name=[NSMutableString string];
@@ -370,13 +405,13 @@ static void FindAttribute(CSHandle *handle,int attribute)
 
 -(void)parseAttributesForHandle:(CSHandle *)handle array:(NSMutableArray *)array
 {
-	NSIndexSet *indexes=[self parseDefintionVectorForHandle:handle numberOfElements:(int)[array count]];
+	NSIndexSet *indexes=[self parseDefintionVectorForHandle:handle numberOfElements:[array count]];
 
 	int external=[handle readUInt8];
 	if(external!=0) [XADException raiseNotSupportedException]; // TODO: figure out what to do
 
 	for(NSInteger i=[indexes firstIndex];i!=NSNotFound;i=[indexes indexGreaterThanIndex:i])
-	SetNumberEntryInArray(array,(int)i,[handle readUInt32LE],XADWindowsFileAttributesKey);
+	SetNumberEntryInArray(array,i,[handle readUInt32LE],XADWindowsFileAttributesKey);
 }
 
 
@@ -391,18 +426,18 @@ static void FindAttribute(CSHandle *handle,int attribute)
 		switch(type)
 		{
 			case 0: // End
-				[dict setObject:[self collectAllSubStreamsFromFolders:folders] forKey:@"SubStreams"];
+				dict[@"SubStreams"] = [self collectAllSubStreamsFromFolders:folders];
 				return dict;
 
 			case 6: // PackInfo
 				packedstreams=[self parsePackedStreamsForHandle:handle];
-				[dict setObject:packedstreams forKey:@"PackedStreams"];
+				dict[@"PackedStreams"] = packedstreams;
 			break;
 
 			case 7: // CodersInfo
 				folders=[self parseFoldersForHandle:handle packedStreams:packedstreams];
 				[self setupDefaultSubStreamsForFolders:folders];
-				[dict setObject:folders forKey:@"Folders"];
+				dict[@"Folders"] = folders;
 			break;
 
 			case 8: // SubStreamsInfo
@@ -463,7 +498,7 @@ static void FindAttribute(CSHandle *handle,int attribute)
 
 	int packedstreamindex=0;
 	for(int i=0;i<numfolders;i++)
-	[self parseFolderForHandle:handle dictionary:[folders objectAtIndex:i]
+	[self parseFolderForHandle:handle dictionary:folders[i]
 	packedStreams:packedstreams packedStreamIndex:&packedstreamindex];
 
 	for(;;)
@@ -476,8 +511,8 @@ static void FindAttribute(CSHandle *handle,int attribute)
 			case 12: // CodersUnpackSize
 				for(int i=0;i<numfolders;i++)
 				{
-					NSArray *outstreams=[[folders objectAtIndex:i] objectForKey:@"OutStreams"];
-					int numoutstreams=(int)[outstreams count];
+					NSArray *outstreams=folders[i][@"OutStreams"];
+					int numoutstreams=[outstreams count];
 					for(int j=0;j<numoutstreams;j++)
 					SetNumberEntryInArray(outstreams,j,ReadNumber(handle),@"Size");
 				}
@@ -520,19 +555,19 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 
 		NSMutableDictionary *coder=[NSMutableDictionary dictionaryWithObjectsAndKeys:
 			coderid,@"ID",
-			[NSNumber numberWithInt:(int)[instreams count]],@"FirstInStreamIndex",
-			[NSNumber numberWithInt:(int)[outstreams count]],@"FirstOutStreamIndex",
+			@([instreams count]),@"FirstInStreamIndex",
+			@([outstreams count]),@"FirstOutStreamIndex",
 			props,@"Properties",
 		nil];
 
 		for(int j=0;j<numinstreams;j++) [instreams addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
 			coder,@"Coder",
-			[NSNumber numberWithInt:j],@"SubIndex",
+			@(j),@"SubIndex",
 		nil]];
 
 		for(int j=0;j<numoutstreams;j++) [outstreams addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
 			coder,@"Coder",
-			[NSNumber numberWithInt:j],@"SubIndex",
+			@(j),@"SubIndex",
 		nil]];
 
 		while(flags&0x80)
@@ -544,11 +579,11 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 		}
 	}
 
-	[dictionary setObject:instreams forKey:@"InStreams"];
-	[dictionary setObject:outstreams forKey:@"OutStreams"];
+	dictionary[@"InStreams"] = instreams;
+	dictionary[@"OutStreams"] = outstreams;
 
-	int totalinstreams=(int)[instreams count];
-	int totaloutstreams=(int)[outstreams count];
+	int totalinstreams=[instreams count];
+	int totaloutstreams=[outstreams count];
 
 	// Load binding pairs
 	int numbindpairs=totaloutstreams-1;
@@ -565,31 +600,31 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 	if(numpackedstreams==1)
 	{
 		for(int i=0;i<totalinstreams;i++)
-		if(![[instreams objectAtIndex:i] objectForKey:@"SourceIndex"])
+		if(!instreams[i][@"SourceIndex"])
 		{
-			SetObjectEntryInArray(instreams,i,[packedstreams objectAtIndex:*packedstreamindex],@"PackedStream");
+			SetObjectEntryInArray(instreams,i,packedstreams[*packedstreamindex],@"PackedStream");
 			break;
 		}
 	}
 	else
 	{
 		for(int i=0;i<numpackedstreams;i++)
-		SetObjectEntryInArray(instreams,(int)ReadNumber(handle),[packedstreams objectAtIndex:*packedstreamindex+i],@"PackedStream");
+		SetObjectEntryInArray(instreams,(int)ReadNumber(handle),packedstreams[*packedstreamindex+i],@"PackedStream");
 	}
 	*packedstreamindex+=numpackedstreams;
 
 	// Find output stream
 	for(int i=0;i<totaloutstreams;i++)
-	if(![[outstreams objectAtIndex:i] objectForKey:@"DestinationIndex"])
+	if(!outstreams[i][@"DestinationIndex"])
 	{
-		[dictionary setObject:[NSNumber numberWithInt:i] forKey:@"FinalOutStreamIndex"];
+		dictionary[@"FinalOutStreamIndex"] = @(i);
 		break;
 	}
 }
 
 -(void)parseSubStreamsInfoForHandle:(CSHandle *)handle folders:(NSArray *)folders
 {
-	int numfolders=(int)[folders count];
+	int numfolders=[folders count];
 
 	for(;;)
 	{
@@ -618,9 +653,9 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 			case 9: // Size
 				for(int i=0;i<numfolders;i++)
 				{
-					NSDictionary *folder=[folders objectAtIndex:i];
-					NSMutableArray *substreams=[folder objectForKey:@"SubStreams"];
-					int numsubstreams=(int)[substreams count];
+					NSDictionary *folder=folders[i];
+					NSMutableArray *substreams=folder[@"SubStreams"];
+					int numsubstreams=[substreams count];
 					uint64_t sum=0;
 					for(int j=0;j<numsubstreams-1;j++)
 					{
@@ -630,9 +665,9 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 						sum+=size;
 					}
 
-					int outindex=[[folder objectForKey:@"FinalOutStreamIndex"] intValue];
-					NSDictionary *outstream=[[folder objectForKey:@"OutStreams"] objectAtIndex:outindex];
-					uint64_t totalsize=[[outstream objectForKey:@"Size"] unsignedLongLongValue];
+					int outindex=[folder[@"FinalOutStreamIndex"] intValue];
+					NSDictionary *outstream=folder[@"OutStreams"][outindex];
+					uint64_t totalsize=[outstream[@"Size"] unsignedLongLongValue];
 
 					SetNumberEntryInArray(substreams,numsubstreams-1,totalsize-sum,@"Size");
 					SetNumberEntryInArray(substreams,numsubstreams-1,sum,@"StartOffset");
@@ -644,12 +679,12 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 				NSMutableArray *crcstreams=[NSMutableArray array];
 				for(int i=0;i<numfolders;i++)
 				{
-					NSMutableArray *substreams=[[folders objectAtIndex:i] objectForKey:@"SubStreams"];
-					int numsubstreams=(int)[substreams count];
+					NSMutableArray *substreams=folders[i][@"SubStreams"];
+					int numsubstreams=[substreams count];
 					for(int j=0;j<numsubstreams;j++)
 					{
-						NSMutableDictionary *stream=[substreams objectAtIndex:j];
-						if(![stream objectForKey:@"CRC"]) [crcstreams addObject:stream];
+						NSMutableDictionary *stream=substreams[j];
+						if(!stream[@"CRC"]) [crcstreams addObject:stream];
 					}
 				}
 
@@ -664,19 +699,19 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 
 -(void)setupDefaultSubStreamsForFolders:(NSArray *)folders
 {
-	int numfolders=(int)[folders count];
+	int numfolders=[folders count];
 	for(int i=0;i<numfolders;i++)
 	{
-		NSMutableDictionary *folder=[folders objectAtIndex:i];
-		int outindex=[[folder objectForKey:@"FinalOutStreamIndex"] intValue];
-		NSDictionary *outstream=[[folder objectForKey:@"OutStreams"] objectAtIndex:outindex];
+		NSMutableDictionary *folder=folders[i];
+		int outindex=[folder[@"FinalOutStreamIndex"] intValue];
+		NSDictionary *outstream=folder[@"OutStreams"][outindex];
 		NSMutableArray *substreams=ArrayWithLength(1);
 
 		SetNumberEntryInArray(substreams,0,i,@"FolderIndex");
 		SetNumberEntryInArray(substreams,0,0,@"SubIndex");
 		SetNumberEntryInArray(substreams,0,0,@"StartOffset");
-		SetObjectEntryInArray(substreams,0,[outstream objectForKey:@"Size"],@"Size");
-		SetObjectEntryInArray(substreams,0,[folder objectForKey:@"CRC"],@"CRC");
+		SetObjectEntryInArray(substreams,0,outstream[@"Size"],@"Size");
+		SetObjectEntryInArray(substreams,0,folder[@"CRC"],@"CRC");
 
 		SetObjectEntryInArray(folders,i,substreams,@"SubStreams");
 	}
@@ -684,11 +719,11 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 
 -(NSArray *)collectAllSubStreamsFromFolders:(NSArray *)folders
 {
-	int numfolders=(int)[folders count];
+	int numfolders=[folders count];
 	NSMutableArray *allsubstreams=[NSMutableArray array];
 
 	for(int i=0;i<numfolders;i++)
-	[allsubstreams addObjectsFromArray:[[folders objectAtIndex:i] objectForKey:@"SubStreams"]];
+	[allsubstreams addObjectsFromArray:folders[i][@"SubStreams"]];
 
 	return allsubstreams;
 }
@@ -699,16 +734,16 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 
 -(CSHandle *)rawHandleForEntryWithDictionary:(NSDictionary *)dict wantChecksum:(BOOL)checksum
 {
-	NSNumber *isempty=[dict objectForKey:@"7zIsEmptyFile"];
+	NSNumber *isempty=dict[@"7zIsEmptyFile"];
 	if(isempty&&[isempty boolValue]) return [self zeroLengthHandleWithChecksum:checksum];
 
 	CSHandle *handle=[self subHandleFromSolidStreamForEntryWithDictionary:dict];
 
 	if(checksum)
 	{
-		NSNumber *crc=[dict objectForKey:@"7zCRC32"];
+		NSNumber *crc=dict[@"7zCRC32"];
 		if(crc) return [XADCRCHandle IEEECRC32HandleWithHandle:handle
-		length:[handle fileSize] correctCRC:(uint32_t)[crc unsignedLongValue] conditioned:YES];
+		length:[handle fileSize] correctCRC:[crc unsignedLongValue] conditioned:YES];
 	}
 
 	return handle;
@@ -721,18 +756,18 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 
 -(CSHandle *)handleForStreams:(NSDictionary *)streams folderIndex:(int)folderindex
 {
-	NSDictionary *folder=[[streams objectForKey:@"Folders"] objectAtIndex:folderindex];
-	int finalindex=[[folder objectForKey:@"FinalOutStreamIndex"] intValue];
+	NSDictionary *folder=streams[@"Folders"][folderindex];
+	int finalindex=[folder[@"FinalOutStreamIndex"] intValue];
 
 	return [self outHandleForFolder:folder index:finalindex];
 }
 
 -(CSHandle *)outHandleForFolder:(NSDictionary *)folder index:(int)index
 {
-	NSDictionary *outstream=[[folder objectForKey:@"OutStreams"] objectAtIndex:index];
-	uint64_t size=[[outstream objectForKey:@"Size"] unsignedLongLongValue];
-	NSDictionary *coder=[outstream objectForKey:@"Coder"];
-	NSData *props=[coder objectForKey:@"Properties"];
+	NSDictionary *outstream=folder[@"OutStreams"][index];
+	uint64_t size=[outstream[@"Size"] unsignedLongLongValue];
+	NSDictionary *coder=outstream[@"Coder"];
+	NSData *props=coder[@"Properties"];
 
 	CSHandle *inhandle=[self inHandleForFolder:folder coder:coder index:0];
 	if(!inhandle) return nil;
@@ -806,18 +841,18 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 
 -(CSHandle *)inHandleForFolder:(NSDictionary *)folder coder:(NSDictionary *)coder index:(int)index
 {
-	return [self inHandleForFolder:folder index:[[coder objectForKey:@"FirstInStreamIndex"] intValue]+index];
+	return [self inHandleForFolder:folder index:[coder[@"FirstInStreamIndex"] intValue]+index];
 }
 
 -(CSHandle *)inHandleForFolder:(NSDictionary *)folder index:(int)index
 {
-	NSDictionary *instream=[[folder objectForKey:@"InStreams"] objectAtIndex:index];
+	NSDictionary *instream=folder[@"InStreams"][index];
 
-	NSDictionary *packedstream=[instream objectForKey:@"PackedStream"];
+	NSDictionary *packedstream=instream[@"PackedStream"];
 	if(packedstream)
 	{
-		uint64_t start=[[packedstream objectForKey:@"Offset"] unsignedLongLongValue];
-		uint64_t length=[[packedstream objectForKey:@"Size"] unsignedLongLongValue];
+		uint64_t start=[packedstream[@"Offset"] unsignedLongLongValue];
+		uint64_t length=[packedstream[@"Size"] unsignedLongLongValue];
 
 		// Try to make a copied subhandle in case there are multiple-input coders
 		// like BCJ2 in use. If it fails, use noncopied ones, but this will cause
@@ -828,7 +863,7 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 		return handle;
 	}
 
-	NSNumber *sourceindex=[instream objectForKey:@"SourceIndex"];
+	NSNumber *sourceindex=instream[@"SourceIndex"];
 	if(sourceindex)
 	{
 		return [self outHandleForFolder:folder index:[sourceindex intValue]];
@@ -841,9 +876,9 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 
 -(int)IDForCoder:(NSDictionary *)coder
 {
-	NSData *coderid=[coder objectForKey:@"ID"];
+	NSData *coderid=coder[@"ID"];
 	const uint8_t *idbytes=[coderid bytes];
-	int idlength=(int)[coderid length];
+	int idlength=[coderid length];
 
 	switch(idlength)
 	{
@@ -858,12 +893,12 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 -(off_t)compressedSizeForFolder:(NSDictionary *)folder
 {
 	off_t totalsize=0;
-	NSEnumerator *enumerator=[[folder objectForKey:@"InStreams"] objectEnumerator];
+	NSEnumerator *enumerator=[folder[@"InStreams"] objectEnumerator];
 	NSDictionary *instream;
 	while((instream=[enumerator nextObject]))
 	{
-		NSDictionary *packedstream=[instream objectForKey:@"PackedStream"];
-		if(packedstream) totalsize+=[[packedstream objectForKey:@"Size"] longLongValue];
+		NSDictionary *packedstream=instream[@"PackedStream"];
+		if(packedstream) totalsize+=[packedstream[@"Size"] longLongValue];
 	}
 
 	return totalsize;
@@ -871,25 +906,25 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 
 -(off_t)uncompressedSizeForFolder:(NSDictionary *)folder
 {
-	int finalindex=[[folder objectForKey:@"FinalOutStreamIndex"] intValue];
-	NSDictionary *stream=[[folder objectForKey:@"OutStreams"] objectAtIndex:finalindex];
-	return [[stream objectForKey:@"Size"] longLongValue];
+	int finalindex=[folder[@"FinalOutStreamIndex"] intValue];
+	NSDictionary *stream=folder[@"OutStreams"][finalindex];
+	return [stream[@"Size"] longLongValue];
 }
 
 -(NSString *)compressorNameForFolder:(NSDictionary *)folder
 {
-	int finalindex=[[folder objectForKey:@"FinalOutStreamIndex"] intValue];
+	int finalindex=[folder[@"FinalOutStreamIndex"] intValue];
 	return [self compressorNameForFolder:folder index:finalindex];
 }
 
 -(NSString *)compressorNameForFolder:(NSDictionary *)folder index:(int)index
 {
-	NSDictionary *outstream=[[folder objectForKey:@"OutStreams"] objectAtIndex:index];
-	NSDictionary *coder=[outstream objectForKey:@"Coder"];
-	NSDictionary *instream=[[folder objectForKey:@"InStreams"] objectAtIndex:[[coder objectForKey:@"FirstInStreamIndex"] intValue]];
+	NSDictionary *outstream=folder[@"OutStreams"][index];
+	NSDictionary *coder=outstream[@"Coder"];
+	NSDictionary *instream=folder[@"InStreams"][[coder[@"FirstInStreamIndex"] intValue]];
 	NSString *name=[self compressorNameForCoder:coder];
 
-	NSNumber *source=[instream objectForKey:@"SourceIndex"];
+	NSNumber *source=instream[@"SourceIndex"];
 	if(!source) return name;
 	else return [NSString stringWithFormat:@"%@+%@",
 	[self compressorNameForFolder:folder index:[source intValue]],name];
@@ -940,19 +975,19 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 
 -(BOOL)isFolderEncrypted:(NSDictionary *)folder
 {
-	int finalindex=[[folder objectForKey:@"FinalOutStreamIndex"] intValue];
+	int finalindex=[folder[@"FinalOutStreamIndex"] intValue];
 	return [self isFolderEncrypted:folder index:finalindex];
 }
 
 -(BOOL)isFolderEncrypted:(NSDictionary *)folder index:(int)index
 {
-	NSDictionary *outstream=[[folder objectForKey:@"OutStreams"] objectAtIndex:index];
-	NSDictionary *coder=[outstream objectForKey:@"Coder"];
-	NSDictionary *instream=[[folder objectForKey:@"InStreams"] objectAtIndex:[[coder objectForKey:@"FirstInStreamIndex"] intValue]];
+	NSDictionary *outstream=folder[@"OutStreams"][index];
+	NSDictionary *coder=outstream[@"Coder"];
+	NSDictionary *instream=folder[@"InStreams"][[coder[@"FirstInStreamIndex"] intValue]];
 
 	if([self IDForCoder:coder]==0x06f10701) return YES;
 
-	NSNumber *source=[instream objectForKey:@"SourceIndex"];
+	NSNumber *source=instream[@"SourceIndex"];
 	if(!source) return NO;
 	else return [self isFolderEncrypted:folder index:[source intValue]];
 }
@@ -978,7 +1013,7 @@ packedStreams:(NSArray *)packedstreams packedStreamIndex:(int *)packedstreaminde
 name:(NSString *)name propertiesToAdd:(NSMutableDictionary *)props
 {
 	const uint8_t *bytes=[data bytes];
-	int length=(int)[data length];
+	int length=[data length];
 
 	if(length<2) return NO;
 	if(bytes[0]!='M' || bytes[1]!='Z') return NO;
@@ -987,8 +1022,7 @@ name:(NSString *)name propertiesToAdd:(NSMutableDictionary *)props
 	{
 		if(Is7ZipSignature(bytes+offs))
 		{
-			[props setObject:[NSNumber numberWithLongLong:offs]
-			forKey:@"7zSFXOffset"];
+			props[@"7zSFXOffset"] = [NSNumber numberWithLongLong:offs];
 			return YES;
 		}
 	}
@@ -997,7 +1031,7 @@ name:(NSString *)name propertiesToAdd:(NSMutableDictionary *)props
 
 -(void)parse
 {
-	off_t offs=[[[self properties] objectForKey:@"7zSFXOffset"] longLongValue];
+	off_t offs=[[self properties][@"7zSFXOffset"] longLongValue];
 	[[self handle] seekToFileOffset:offs];
 
 	[super parse];

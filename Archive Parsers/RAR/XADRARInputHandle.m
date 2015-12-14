@@ -11,7 +11,7 @@
 	NSDictionary *dict;
 	while((dict=[enumerator nextObject]))
 	{
-		totallength+=[[dict objectForKey:@"InputLength"] longLongValue];
+		totallength+=[dict[@"InputLength"] longLongValue];
 	}
 
 	if((self=[super initWithName:[parent filename] length:totallength]))
@@ -68,17 +68,17 @@
 -(void)startNextPart
 {
 	if(part>=[parts count]) [XADException raiseInputException];
-	NSDictionary *dict=[parts objectAtIndex:part];
+	NSDictionary *dict=parts[part];
 	part++;
 
-	off_t offset=[[dict objectForKey:@"Offset"] longLongValue];
-	off_t length=[[dict objectForKey:@"InputLength"] longLongValue];
+	off_t offset=[dict[@"Offset"] longLongValue];
+	off_t length=[dict[@"InputLength"] longLongValue];
 
 	[[parser handle] seekToFileOffset:offset];
 	partend+=length;
 
 	crc=0xffffffff;
-	correctcrc=[[dict objectForKey:@"CRC32"] unsignedIntValue];
+	correctcrc=[dict[@"CRC32"] unsignedIntValue];
 }
 
 @end

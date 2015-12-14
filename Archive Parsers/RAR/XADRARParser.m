@@ -68,7 +68,7 @@ static inline BOOL IsZeroBlock(RARBlock block) { return block.start==0; }
 
 static BOOL IsRARSignature(const uint8_t *ptr)
 {
-	return ptr[0]==0x52 && ptr[1]==0x61 && ptr[2]==0x72 && ptr[3]==0x21 &&
+	return ptr[0]=='R' && ptr[1]=='a' && ptr[2]=='r' && ptr[3]=='!' &&
 	ptr[4]==0x1a && ptr[5]==0x07 && ptr[6]==0x00;
 }
 
@@ -126,10 +126,10 @@ static const uint8_t *FindSignature(const uint8_t *ptr,int length)
 		if((matches=[name substringsCapturedByPattern:@"^(.*[^0-9])([0-9]+)(.*)\\.rar$" options:REG_ICASE]))
 		return [self scanForVolumesWithFilename:name
 		regex:[XADRegex regexWithPattern:[NSString stringWithFormat:@"^%@[0-9]{%ld}%@.rar$",
-			[[matches objectAtIndex:1] escapedPattern],
-			(long)[(NSString *)[matches objectAtIndex:2] length],
-			[[matches objectAtIndex:3] escapedPattern]] options:REG_ICASE]
-		firstFileExtension:@"rar"];
+			[matches[1] escapedPattern],
+			(long)[(NSString *)matches[2] length],
+			[matches[3] escapedPattern]] options:REG_ICASE]
+		];
 	}
 
 	// Old naming scheme. Just look for rar/r01/s01/... files.
@@ -138,7 +138,7 @@ static const uint8_t *FindSignature(const uint8_t *ptr,int length)
 	{
 		return [self scanForVolumesWithFilename:name
 		regex:[XADRegex regexWithPattern:[NSString stringWithFormat:@"^%@\\.(rar|[r-z][0-9]{2})$",
-			[[matches objectAtIndex:1] escapedPattern]] options:REG_ICASE]
+			[matches[1] escapedPattern]] options:REG_ICASE]
 		firstFileExtension:@"rar"];
 	}
 
@@ -302,11 +302,9 @@ static const uint8_t *FindSignature(const uint8_t *ptr,int length)
 					totalfilesize=0;
 				}
 
-				[currparts addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-					[NSNumber numberWithLongLong:block.datastart],@"Offset",
-					[NSNumber numberWithLongLong:block.datasize],@"InputLength",
-					[NSNumber numberWithUnsignedInt:header.crc],@"CRC32",
-				nil]];
+				[currparts addObject:@{@"Offset": @(block.datastart),
+					@"InputLength": @(block.datasize),
+					@"CRC32": @(header.crc)}];
 
 				totalfilesize+=block.datasize;
 
@@ -327,13 +325,11 @@ static const uint8_t *FindSignature(const uint8_t *ptr,int length)
 						totalsolidsize=0;
 					}
 
-					[currfiles addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-						currparts,@"Parts",
-						[NSNumber numberWithLongLong:header.size],@"OutputLength",
-						[NSNumber numberWithInt:header.version],@"Version",
-						[NSNumber numberWithBool:(block.flags&LHD_PASSWORD)?YES:NO],@"Encrypted",
-						header.salt,@"Salt", // Ends the list if nil.
-					nil]];
+					[currfiles addObject:@{@"Parts": currparts,
+						@"OutputLength": @(header.size),
+						@"Version": @(header.version),
+						@"Encrypted": [NSNumber numberWithBool:(block.flags&LHD_PASSWORD)?YES:NO],
+						@"Salt": header.salt}];
 
 					// Emit this file.
 					[self addEntryWithBlock:&block header:&header
@@ -370,8 +366,7 @@ static const uint8_t *FindSignature(const uint8_t *ptr,int length)
 
 				[self skipBlock:block];
 
-				CSHandle *handle=[self handle];
-				if([handle respondsToSelector:@selector(currentHandle)]) handle=[(id)handle currentHandle];
+				CSHandle *handle=[self currentHandle];
 				if([handle offsetInFile]!=0) [handle seekToEndOfFile];
 			}
 			break;
@@ -429,16 +424,11 @@ static const uint8_t *FindSignature(const uint8_t *ptr,int length)
 	/*int crc=*/[fh readUInt16LE];
 
 	// TODO: should this be [self handle] or block.fh?
-	NSArray *parts=[NSArray arrayWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-		[NSArray arrayWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-			[NSNumber numberWithLongLong:[[self handle] offsetInFile]],@"Offset",
-			[NSNumber numberWithLongLong:block.headersize-13],@"InputLength",
-			//[NSNumber numberWithUnsignedInt:header.crc],@"CRC32",
-		nil]],@"Parts",
-		[NSNumber numberWithLongLong:commentsize],@"OutputLength",
-		[NSNumber numberWithInt:version],@"Version",
-		[NSNumber numberWithBool:NO],@"Encrypted",
-	nil]];
+	NSArray *parts=@[@{@"Parts": @[@{@"Offset": @([[self handle] offsetInFile]),
+			@"InputLength": [NSNumber numberWithLongLong:block.headersize-13]}],
+		@"OutputLength": [NSNumber numberWithLongLong:commentsize],
+		@"Version": @(version),
+		@"Encrypted": @NO}];
 
 	CSHandle *handle=[self handleForSolidStreamWithObject:parts wantChecksum:NO];
 
@@ -533,27 +523,27 @@ isCorrupted:(BOOL)iscorrupted
 {
 	NSMutableDictionary *dict=[NSMutableDictionary dictionaryWithObjectsAndKeys:
 		[self parseNameData:header->namedata flags:block->flags],XADFileNameKey,
-		[NSNumber numberWithLongLong:solidoffs],XADSolidOffsetKey,
-		[NSNumber numberWithLongLong:header->size],XADSolidLengthKey,
-		[NSNumber numberWithLongLong:header->size],XADFileSizeKey, // TODO: this right?
-		[NSNumber numberWithLongLong:compsize],XADCompressedSizeKey,
+		@(solidoffs),XADSolidOffsetKey,
+		@(header->size),XADSolidLengthKey,
+		@(header->size),XADFileSizeKey, // TODO: this right?
+		@(compsize),XADCompressedSizeKey,
 		[NSDate XADDateWithMSDOSDateTime:header->dostime],XADLastModificationDateKey,
 		files,XADSolidObjectKey,
 
-		[NSNumber numberWithInt:block->flags],@"RARFlags",
-		[NSNumber numberWithInt:header->version],@"RARCompressionVersion",
-		[NSNumber numberWithInt:header->method],@"RARCompressionMethod",
-		[NSNumber numberWithUnsignedInt:header->crc],@"RARCRC32",
-		[NSNumber numberWithInt:header->os],@"RAROS",
-		[NSNumber numberWithUnsignedInt:header->attrs],@"RARAttributes",
+		@(block->flags),@"RARFlags",
+		@(header->version),@"RARCompressionVersion",
+		@(header->method),@"RARCompressionMethod",
+		@(header->crc),@"RARCRC32",
+		@(header->os),@"RAROS",
+		@(header->attrs),@"RARAttributes",
 		[NSNumber numberWithInt:(int)[files count]-1],@"RARSolidIndex",
 	nil];
 
-	if(iscorrupted) [dict setObject:[NSNumber numberWithBool:YES] forKey:XADIsCorruptedKey];
+	if(iscorrupted) dict[XADIsCorruptedKey] = @YES;
 
-	if(block->flags&LHD_PASSWORD) [dict setObject:[NSNumber numberWithBool:YES] forKey:XADIsEncryptedKey];
-	if((block->flags&LHD_WINDOWMASK)==LHD_DIRECTORY) [dict setObject:[NSNumber numberWithBool:YES] forKey:XADIsDirectoryKey];
-	if(header->version==15 && header->os==0 && (header->attrs&0x10)) [dict setObject:[NSNumber numberWithBool:YES] forKey:XADIsDirectoryKey];
+	if(block->flags&LHD_PASSWORD) dict[XADIsEncryptedKey] = @YES;
+	if((block->flags&LHD_WINDOWMASK)==LHD_DIRECTORY) dict[XADIsDirectoryKey] = @YES;
+	if(header->version==15 && header->os==0 && (header->attrs&0x10)) dict[XADIsDirectoryKey] = @YES;
 
 	NSString *osname=nil;
 	switch(header->os)
@@ -563,13 +553,13 @@ isCorrupted:(BOOL)iscorrupted
 		case 2: osname=@"Win32"; break;
 		case 3: osname=@"Unix"; break;
 	}
-	if(osname) [dict setObject:[self XADStringWithString:osname] forKey:@"RAROSName"];
+	if(osname) dict[@"RAROSName"] = [self XADStringWithString:osname];
 
 	switch(header->os)
 	{
-		case 0: [dict setObject:[NSNumber numberWithUnsignedInt:header->attrs] forKey:XADDOSFileAttributesKey]; break;
-		case 2: [dict setObject:[NSNumber numberWithUnsignedInt:header->attrs] forKey:XADWindowsFileAttributesKey]; break;
-		case 3: [dict setObject:[NSNumber numberWithUnsignedInt:header->attrs] forKey:XADPosixPermissionsKey]; break;
+		case 0: dict[XADDOSFileAttributesKey] = @(header->attrs); break;
+		case 2: dict[XADWindowsFileAttributesKey] = @(header->attrs); break;
+		case 3: dict[XADPosixPermissionsKey] = @(header->attrs); break;
 	}
 
 	NSString *methodname=nil;
@@ -582,7 +572,7 @@ isCorrupted:(BOOL)iscorrupted
 		case 0x34: methodname=[NSString stringWithFormat:@"Good v%d.%d",header->version/10,header->version%10]; break;
 		case 0x35: methodname=[NSString stringWithFormat:@"Best v%d.%d",header->version/10,header->version%10]; break;
 	}
-	if(methodname) [dict setObject:[self XADStringWithString:methodname] forKey:XADCompressionNameKey];
+	if(methodname) dict[XADCompressionNameKey] = [self XADStringWithString:methodname];
 
 	[self addEntryWithDictionary:dict];
 }
@@ -656,28 +646,28 @@ isCorrupted:(BOOL)iscorrupted
 -(CSHandle *)handleForEntryWithDictionary:(NSDictionary *)dict wantChecksum:(BOOL)checksum
 {
 	// Give the caller some ahead notice if we will be using a password.
-	NSNumber *encryptnum=[dict objectForKey:XADIsEncryptedKey];
+	NSNumber *encryptnum=dict[XADIsEncryptedKey];
 	if(encryptnum && [encryptnum boolValue])
 	{
-		if([[dict objectForKey:@"RARCompressionVersion"] intValue]<=20) caresaboutpasswordencoding=YES;
+		if([dict[@"RARCompressionVersion"] intValue]<=20) caresaboutpasswordencoding=YES;
 		[self password];
 		if(![self hasPassword]) return nil;
 	}
 
 	CSHandle *handle;
-	if([[dict objectForKey:@"RARCompressionMethod"] intValue]==0x30)
+	if([dict[@"RARCompressionMethod"] intValue]==0x30)
 	{
-		NSArray *files=[dict objectForKey:XADSolidObjectKey];
-		int index=[[dict objectForKey:@"RARSolidIndex"] intValue];
+		NSArray *files=dict[XADSolidObjectKey];
+		int index=[dict[@"RARSolidIndex"] intValue];
 
 		handle=[self inputHandleForFileWithIndex:index files:files];
 
-		off_t length=[[dict objectForKey:XADSolidLengthKey] longLongValue];
+		off_t length=[dict[XADSolidLengthKey] longLongValue];
 		if(length!=[handle fileSize]) handle=[handle nonCopiedSubHandleOfLength:length];
 	}
 	else
 	{
-		off_t length=[[dict objectForKey:XADSolidLengthKey] longLongValue];
+		off_t length=[dict[XADSolidLengthKey] longLongValue];
 
 		// Avoid 0-length files because they make trouble in solid streams.
 		if(length==0) handle=[self zeroLengthHandleWithChecksum:YES];
@@ -685,14 +675,14 @@ isCorrupted:(BOOL)iscorrupted
 	}
 
 	if(checksum) handle=[XADCRCHandle IEEECRC32HandleWithHandle:handle length:[handle fileSize]
-	correctCRC:[[dict objectForKey:@"RARCRC32"] unsignedIntValue] conditioned:YES];
+	correctCRC:[dict[@"RARCRC32"] unsignedIntValue] conditioned:YES];
 
 	return handle;
 }
 
 -(CSHandle *)handleForSolidStreamWithObject:(id)obj wantChecksum:(BOOL)checksum
 {
-	int version=[[[obj objectAtIndex:0] objectForKey:@"Version"] intValue];
+	int version=[obj[0][@"Version"] intValue];
 
 	switch(version)
 	{
@@ -723,12 +713,12 @@ isCorrupted:(BOOL)iscorrupted
 -(CSHandle *)inputHandleForFileWithIndex:(int)file files:(NSArray *)files
 {
 	if(file>=[files count]) [XADException raiseExceptionWithXADError:XADInputError]; // TODO: better error
-	NSDictionary *dict=[files objectAtIndex:file];
+	NSDictionary *dict=files[file];
 
-	CSHandle *handle=[self inputHandleWithParts:[dict objectForKey:@"Parts"]
-	encrypted:[[dict objectForKey:@"Encrypted"] longLongValue]
-	cryptoVersion:[[dict objectForKey:@"Version"] intValue]
-	salt:[dict objectForKey:@"Salt"]];
+	CSHandle *handle=[self inputHandleWithParts:dict[@"Parts"]
+	encrypted:[dict[@"Encrypted"] longLongValue]
+	cryptoVersion:[dict[@"Version"] intValue]
+	salt:dict[@"Salt"]];
 
 	return handle;
 }
@@ -763,11 +753,11 @@ cryptoVersion:(int)version salt:(NSData *)salt
 {
 	if(!keys) keys=[NSMutableDictionary new];
 
-	NSData *key=[keys objectForKey:salt];
+	NSData *key=keys[salt];
 	if(key) return key;
 
 	key=[XADRARAESHandle keyForPassword:[self password] salt:salt brokenHash:encryptversion<36];
-	[keys setObject:key forKey:salt];
+	keys[salt] = key;
 	return key;
 }
 
@@ -777,9 +767,9 @@ cryptoVersion:(int)version salt:(NSData *)salt
 -(off_t)outputLengthOfFileWithIndex:(int)file files:(NSArray *)files
 {
 	if(file>=[files count]) [XADException raiseExceptionWithXADError:XADInputError]; // TODO: better error
-	NSDictionary *dict=[files objectAtIndex:file];
+	NSDictionary *dict=files[file];
 
-	return [[dict objectForKey:@"OutputLength"] longLongValue];
+	return [dict[@"OutputLength"] longLongValue];
 }
 
 
@@ -812,7 +802,7 @@ name:(NSString *)name propertiesToAdd:(NSMutableDictionary *)props
 	const uint8_t *header=FindSignature(bytes,length);
 	if(header)
 	{
-		[props setObject:[NSNumber numberWithLongLong:header-bytes] forKey:@"RAREmbedOffset"];
+		props[@"RAREmbedOffset"] = [NSNumber numberWithLongLong:header-bytes];
 		return YES;
 	}
 
@@ -838,20 +828,20 @@ name:(NSString *)name propertiesToAdd:(NSMutableDictionary *)props
 	// New naming scheme. Find the last number in the name, and look for other files
 	// with the same number of digits in the same location.
 	NSArray *matches;
-	if((matches=[name substringsCapturedByPattern:@"^(.*[^0-9])([0-9]+)(.*)\\.exe$" options:REG_ICASE]))
+	if((matches=[name substringsCapturedByPattern:@"^(.*[^0-9])([0-9]+)(.*)\\.(exe|sfx)$" options:REG_ICASE]))
 	return [self scanForVolumesWithFilename:name
-	regex:[XADRegex regexWithPattern:[NSString stringWithFormat:@"^%@[0-9]{%ld}%@.(rar|exe)$",
-		[[matches objectAtIndex:1] escapedPattern],
-		(long)[(NSString *)[matches objectAtIndex:2] length],
-		[[matches objectAtIndex:3] escapedPattern]] options:REG_ICASE]
-	firstFileExtension:@"exe"];
+	regex:[XADRegex regexWithPattern:[NSString stringWithFormat:@"^%@[0-9]{%ld}%@.(rar|exe|sfx)$",
+		[matches[1] escapedPattern],
+		(long)[(NSString *)matches[2] length],
+		[matches[3] escapedPattern]] options:REG_ICASE]
+	];
 
 	return nil;
 }
 
 -(void)parse
 {
-	off_t offs=[[[self properties] objectForKey:@"RAREmbedOffset"] longLongValue];
+	off_t offs=[[self properties][@"RAREmbedOffset"] longLongValue];
 	[[self handle] seekToFileOffset:offs];
 
 	[super parse];

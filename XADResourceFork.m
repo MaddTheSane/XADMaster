@@ -22,7 +22,7 @@
 	return nil;
 }
 
--(id)init
+-(instancetype)init
 {
 	if((self=[super init]))
 	{
@@ -61,11 +61,11 @@
 
 -(NSData *)resourceDataForType:(uint32_t)type identifier:(int)identifier
 {
-	NSNumber *typekey=[NSNumber numberWithUnsignedInt:type];
-	NSNumber *identifierkey=[NSNumber numberWithInt:identifier];
-	NSDictionary *resourcesoftype=[resources objectForKey:typekey];
-	NSDictionary *resource=[resourcesoftype objectForKey:identifierkey];
-	return [resource objectForKey:@"Data"];
+	NSNumber *typekey=@(type);
+	NSNumber *identifierkey=@(identifier);
+	NSDictionary *resourcesoftype=resources[typekey];
+	NSDictionary *resource=resourcesoftype[identifierkey];
+	return resource[@"Data"];
 }
 
 -(NSMutableDictionary *)_parseResourceDataFromHandle:(CSHandle *)handle
@@ -73,10 +73,10 @@
 	NSMutableDictionary *dict=[NSMutableDictionary dictionary];
 	while(![handle atEndOfFile])
 	{
-		NSNumber *key=[NSNumber numberWithUnsignedInteger:[handle offsetInFile]];
+		NSNumber *key=@((unsigned long long)[handle offsetInFile]);
 		uint32_t length=[handle readUInt32BE];
 		NSData *data=[handle readDataOfLength:length];
-		[dict setObject:data forKey:key];
+		dict[key] = data;
 	}
 	return dict;
 }
@@ -100,36 +100,36 @@
 		[handle seekToFileOffset:typelistoffset+offset];
 		NSDictionary *references=[self _parseReferencesFromHandle:handle count:count];
 
-		[dict setObject:references forKey:[NSNumber numberWithUnsignedInt:type]];
+		dict[@(type)] = references;
 	}
 
 	NSEnumerator *typeenumerator=[dict keyEnumerator];
 	NSNumber *type;
 	while(type=[typeenumerator nextObject])
 	{
-		NSDictionary *resourcesoftype=[dict objectForKey:type];
+		NSDictionary *resourcesoftype=dict[type];
 		NSEnumerator *identifierenumerator=[resourcesoftype keyEnumerator];
 		NSNumber *identifier;
 		while(identifier=[identifierenumerator nextObject])
 		{
-			NSMutableDictionary *resource=[resourcesoftype objectForKey:identifier];
-			[resource setObject:type forKey:@"Type"];
+			NSMutableDictionary *resource=resourcesoftype[identifier];
+			resource[@"Type"] = type;
 
 			// Resolve the name (if any).
-			NSNumber *nameoffset=[resource objectForKey:@"NameOffset"];
+			NSNumber *nameoffset=resource[@"NameOffset"];
 			if(nameoffset)
 			{
 				// untested
 				[handle seekToFileOffset:namelistoffset+[nameoffset intValue]];
 				int length=[handle readUInt8];
 				NSData *namedata=[handle readDataOfLength:length];
-				[resource setObject:namedata forKey:@"NameData"];
+				resource[@"NameData"] = namedata;
 			}
 
 			// Resolve the data.
-			NSNumber *dataoffset=[resource objectForKey:@"DataOffset"];
-			NSData *data=[dataobjects objectForKey:dataoffset];
-			[resource setObject:data forKey:@"Data"];
+			NSNumber *dataoffset=resource[@"DataOffset"];
+			NSData *data=dataobjects[dataoffset];
+			resource[@"Data"] = data;
 		}
 	}
 	
@@ -148,16 +148,16 @@
 		off_t offset=attrsandoffset&0xffffff;
 		/*reserved=*/[handle readUInt32BE];
 
-		NSNumber *key=[NSNumber numberWithInt:identifier];
+		NSNumber *key=@(identifier);
 		NSMutableDictionary *resource=[NSMutableDictionary dictionaryWithObjectsAndKeys:
 			key,@"ID",
-			[NSNumber numberWithInt:attrs],@"Attributes",
-			[NSNumber numberWithUnsignedInt:(int)offset],@"DataOffset",
+			@(attrs),@"Attributes",
+			@((unsigned long long)offset),@"DataOffset",
 		nil];
 
-		if(nameoffset!=-1) [resource setObject:[NSNumber numberWithInt:nameoffset] forKey:@"NameOffset"];
+		if(nameoffset!=-1) resource[@"NameOffset"] = @(nameoffset);
 
-		[dict setObject:resource forKey:key];
+		dict[key] = resource;
 	}
 	return dict;
 }

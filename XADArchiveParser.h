@@ -78,7 +78,6 @@ extern NSString *XADDiskLabelKey;
 	XADSkipHandle *skiphandle;
 	XADResourceFork *resourcefork;
 
-	id delegate;
 	NSString *password;
 	NSString *passwordencodingname;
 	BOOL caresaboutpasswordencoding;
@@ -115,60 +114,57 @@ resourceFork:(XADResourceFork *)fork name:(NSString *)name propertiesToAdd:(NSMu
 +(instancetype)archiveParserForEntryWithDictionary:(NSDictionary *)entry resourceForkDictionary:(NSDictionary *)forkentry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum;
 +(instancetype)archiveParserForEntryWithDictionary:(NSDictionary *)entry resourceForkDictionary:(NSDictionary *)forkentry archiveParser:(XADArchiveParser *)parser wantChecksum:(BOOL)checksum error:(XADError *)errorptr;
  
--(instancetype)init;
+-(instancetype)init NS_DESIGNATED_INITIALIZER;
 
-@property (retain) CSHandle *handle;
-@property (retain) XADResourceFork *resourceFork;
-@property (copy) NSString *name;
--(NSString *)filename;
--(void)setFilename:(NSString *)filename;
--(NSArray *)allFilenames;
--(void)setAllFilenames:(NSArray *)newnames;
+@property (NS_NONATOMIC_IOSONLY, copy) XADHandle *handle;
+@property (NS_NONATOMIC_IOSONLY, strong) XADResourceFork *resourceFork;
+@property (NS_NONATOMIC_IOSONLY, copy) NSString *name;
+@property (NS_NONATOMIC_IOSONLY, copy) NSString *filename;
+@property (NS_NONATOMIC_IOSONLY, copy) NSArray *allFilenames;
 
-@property (assign) id<XADArchiveParserDelegate> delegate;
+@property (NS_NONATOMIC_IOSONLY, assign) id<XADArchiveParserDelegate> delegate;
 
--(NSDictionary *)properties;
--(NSString *)currentFilename;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) NSDictionary *properties;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) NSString *currentFilename;
 
-@property (readonly, getter=isEncrypted) BOOL encrypted;
--(NSString *)password;
--(BOOL)hasPassword;
--(void)setPassword:(NSString *)newpassword;
+@property (NS_NONATOMIC_IOSONLY, getter=isEncrypted, readonly) BOOL encrypted;
+@property (NS_NONATOMIC_IOSONLY, copy) NSString *password;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL hasPassword;
 
--(NSString *)encodingName;
--(float)encodingConfidence;
--(void)setEncodingName:(NSString *)encodingname;
--(BOOL)caresAboutPasswordEncoding;
--(NSString *)passwordEncodingName;
--(void)setPasswordEncodingName:(NSString *)encodingname;
--(XADStringSource *)stringSource;
+@property (NS_NONATOMIC_IOSONLY, copy) NSString *encodingName;
+@property (NS_NONATOMIC_IOSONLY, readonly) float encodingConfidence;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL caresAboutPasswordEncoding;
+@property (NS_NONATOMIC_IOSONLY, copy) NSString *passwordEncodingName;
+@property (NS_NONATOMIC_IOSONLY, readonly, strong) XADStringSource *stringSource;
 
 -(XADString *)linkDestinationForDictionary:(NSDictionary *)dict;
 -(XADString *)linkDestinationForDictionary:(NSDictionary *)dict error:(XADError *)errorptr;
 -(NSDictionary *)extendedAttributesForDictionary:(NSDictionary *)dict;
 -(NSData *)finderInfoForDictionary:(NSDictionary *)dict;
 
--(BOOL)wasStopped;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL wasStopped;
 
--(BOOL)hasChecksum;
--(BOOL)testChecksum;
--(XADError)testChecksumWithoutExceptions;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL hasChecksum;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL testChecksum;
+@property (NS_NONATOMIC_IOSONLY, readonly) XADError testChecksumWithoutExceptions;
 
 
 
 // Internal functions
 
++(NSArray *)scanForVolumesWithFilename:(NSString *)filename regex:(XADRegex *)regex;
 +(NSArray *)scanForVolumesWithFilename:(NSString *)filename
 regex:(XADRegex *)regex firstFileExtension:(NSString *)firstext;
 
--(BOOL)shouldKeepParsing;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL shouldKeepParsing;
 
 -(CSHandle *)handleAtDataOffsetForDictionary:(NSDictionary *)dict;
--(XADSkipHandle *)skipHandle;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) XADSkipHandle *skipHandle;
 -(CSHandle *)zeroLengthHandleWithChecksum:(BOOL)checksum;
 -(CSHandle *)subHandleFromSolidStreamForEntryWithDictionary:(NSDictionary *)dict;
 
--(NSArray *)volumes;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) NSArray *volumes;
+-(CSHandle *)currentHandle;
 -(off_t)offsetForVolume:(int)disk offset:(off_t)offset;
 
 -(void)setObject:(id)object forPropertyKey:(NSString *)key;
@@ -186,7 +182,7 @@ regex:(XADRegex *)regex firstFileExtension:(NSString *)firstext;
 -(XADString *)XADStringWithCString:(const char *)cstring;
 -(XADString *)XADStringWithCString:(const char *)cstring encodingName:(NSString *)encoding;
 
--(XADPath *)XADPath;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) XADPath *XADPath;
 -(XADPath *)XADPathWithString:(NSString *)string;
 -(XADPath *)XADPathWithUnseparatedString:(NSString *)string;
 -(XADPath *)XADPathWithData:(NSData *)data separators:(const char *)separators;
@@ -196,8 +192,8 @@ regex:(XADRegex *)regex firstFileExtension:(NSString *)firstext;
 -(XADPath *)XADPathWithCString:(const char *)cstring separators:(const char *)separators;
 -(XADPath *)XADPathWithCString:(const char *)cstring encodingName:(NSString *)encoding separators:(const char *)separators;
 
--(NSData *)encodedPassword;
--(const char *)encodedCStringPassword;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) NSData *encodedPassword;
+@property (NS_NONATOMIC_IOSONLY, readonly) const char *encodedCStringPassword;
 
 -(void)reportInterestingFileWithReason:(NSString *)reason,...;
 
@@ -217,7 +213,7 @@ name:(NSString *)name;
 
 -(void)parse;
 -(CSHandle *)handleForEntryWithDictionary:(NSDictionary *)dict wantChecksum:(BOOL)checksum;
--(NSString *)formatName;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) NSString *formatName;
 
 -(CSHandle *)handleForSolidStreamWithObject:(id)obj wantChecksum:(BOOL)checksum;
 
@@ -225,7 +221,7 @@ name:(NSString *)name;
 // parseWithoutExceptions will in addition return XADBreakError if the delegate
 // requested parsing to stop.
 
--(XADError)parseWithoutExceptions;
+@property (NS_NONATOMIC_IOSONLY, readonly) XADError parseWithoutExceptions;
 -(CSHandle *)handleForEntryWithDictionary:(NSDictionary *)dict wantChecksum:(BOOL)checksum error:(XADError *)errorptr;
 
 @end

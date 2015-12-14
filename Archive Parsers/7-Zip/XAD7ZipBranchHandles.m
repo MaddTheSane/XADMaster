@@ -87,7 +87,7 @@
 	x86_Convert_Init(state);
 }
 -(int)decodeBlock:(uint8_t *)block length:(int)length offset:(off_t)pos
-{ return (int)x86_Convert(block,(SizeT)length,(UInt32)pos,(UInt32 *)&state,0); }
+{ return (int)x86_Convert(block,length,(UInt32)pos,(UInt32 *)&state,0); }
 @end
 
 @implementation XAD7ZipPPCHandle

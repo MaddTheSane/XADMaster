@@ -8,9 +8,8 @@
 	int passwordlength;
 }
 
--(id)initWithHandle:(CSHandle *)handle password:(NSData *)passdata;
--(id)initAsCopyOf:(XADXORHandle *)other;
--(void)dealloc;
+-(instancetype)initWithHandle:(CSHandle *)handle password:(NSData *)passdata;
+-(instancetype)initAsCopyOf:(XADXORHandle *)other;
 
 -(off_t)fileSize;
 -(off_t)offsetInFile;

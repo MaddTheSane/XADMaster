@@ -88,34 +88,27 @@ extern NSString *XADMacOSCroatianStringEncodingName;
 +(NSString *)escapedASCIIStringForBytes:(const void *)bytes length:(size_t)length;
 +(NSData *)escapedASCIIDataForString:(NSString *)string;
 
--(id)initWithData:(NSData *)bytedata source:(XADStringSource *)stringsource;
--(id)initWithString:(NSString *)knownstring;
--(void)dealloc;
+-(instancetype)initWithData:(NSData *)bytedata source:(XADStringSource *)stringsource NS_DESIGNATED_INITIALIZER;
+-(instancetype)initWithString:(NSString *)knownstring NS_DESIGNATED_INITIALIZER;
 
 -(BOOL)canDecodeWithEncodingName:(NSString *)encoding;
--(NSString *)string;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) NSString *string;
 -(NSString *)stringWithEncodingName:(NSString *)encoding;
--(NSData *)data;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) NSData *data;
 
--(BOOL)encodingIsKnown;
--(NSString *)encodingName;
--(float)confidence;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL encodingIsKnown;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) NSString *encodingName;
+@property (NS_NONATOMIC_IOSONLY, readonly) float confidence;
 
--(XADStringSource *)source;
+@property (NS_NONATOMIC_IOSONLY, readonly, strong) XADStringSource *source;
 
 -(BOOL)hasASCIIPrefix:(NSString *)asciiprefix;
 -(XADString *)XADStringByStrippingASCIIPrefixOfLength:(int)length;
 
--(BOOL)isEqual:(id)other;
--(NSUInteger)hash;
-
--(NSString *)description;
--(id)copyWithZone:(NSZone *)zone;
-
 #ifdef __APPLE__
 -(BOOL)canDecodeWithEncoding:(NSStringEncoding)encoding;
 -(NSString *)stringWithEncoding:(NSStringEncoding)encoding;
--(NSStringEncoding)encoding;
+@property (NS_NONATOMIC_IOSONLY, readonly) NSStringEncoding encoding;
 #endif
 
 @end
@@ -150,22 +143,21 @@ extern NSString *XADMacOSCroatianStringEncodingName;
 	#endif
 }
 
--(id)init;
--(void)dealloc;
+-(instancetype)init NS_DESIGNATED_INITIALIZER;
 
 -(void)analyzeData:(NSData *)data;
 
--(BOOL)hasAnalyzedData;
--(NSString *)encodingName;
--(float)confidence;
--(UniversalDetector *)detector;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL hasAnalyzedData;
+@property (NS_NONATOMIC_IOSONLY, readonly, copy) NSString *encodingName;
+@property (NS_NONATOMIC_IOSONLY, readonly) float confidence;
+@property (NS_NONATOMIC_IOSONLY, readonly, strong) UniversalDetector *detector;
 
 -(void)setFixedEncodingName:(NSString *)encodingname;
--(BOOL)hasFixedEncoding;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL hasFixedEncoding;
 -(void)setPrefersMacEncodings:(BOOL)prefermac;
 
 #ifdef __APPLE__
--(NSStringEncoding)encoding;
+@property (NS_NONATOMIC_IOSONLY, readonly) NSStringEncoding encoding;
 -(void)setFixedEncoding:(NSStringEncoding)encoding;
 #endif
 

@@ -2,11 +2,13 @@
 
 #import "XADArchiveParser.h"
 
-#define XADIgnoredForkStyle 0
-#define XADMacOSXForkStyle 1
-#define XADHiddenAppleDoubleForkStyle 2
-#define XADVisibleAppleDoubleForkStyle 3
-#define XADHFVExplorerAppleDoubleForkStyle 4
+typedef NS_ENUM(int, XADForkStyle) {
+	XADIgnoredForkStyle = 0,
+	XADMacOSXForkStyle = 1,
+	XADHiddenAppleDoubleForkStyle = 2,
+	XADVisibleAppleDoubleForkStyle = 3,
+	XADHFVExplorerAppleDoubleForkStyle = 4
+};
 
 #ifdef __APPLE__
 #define XADDefaultForkStyle XADMacOSXForkStyle
@@ -14,43 +16,35 @@
 #define XADDefaultForkStyle XADVisibleAppleDoubleForkStyle
 #endif
 
-@interface XADUnarchiver:NSObject
+@protocol XADUnarchiverDelegate;
+
+@interface XADUnarchiver:NSObject <XADArchiveParserDelegate>
 {
 	XADArchiveParser *parser;
-	NSString *destination;
-	int forkstyle;
 	BOOL preservepermissions;
-	double updateinterval;
 
-	id delegate;
 	BOOL shouldstop;
 
 	NSMutableArray *deferreddirectories,*deferredlinks;
 }
 
-+(XADUnarchiver *)unarchiverForArchiveParser:(XADArchiveParser *)archiveparser;
-+(XADUnarchiver *)unarchiverForPath:(NSString *)path;
-+(XADUnarchiver *)unarchiverForPath:(NSString *)path error:(XADError *)errorptr;
++(instancetype)unarchiverForArchiveParser:(XADArchiveParser *)archiveparser;
++(instancetype)unarchiverForPath:(NSString *)path;
++(instancetype)unarchiverForPath:(NSString *)path error:(XADError *)errorptr;
 
--(id)initWithArchiveParser:(XADArchiveParser *)archiveparser;
--(void)dealloc;
+-(instancetype)initWithArchiveParser:(XADArchiveParser *)archiveparser NS_DESIGNATED_INITIALIZER;
 
--(XADArchiveParser *)archiveParser;
+@property (NS_NONATOMIC_IOSONLY, readonly, strong) XADArchiveParser *archiveParser;
 
--(id)delegate;
--(void)setDelegate:(id)newdelegate;
+@property (NS_NONATOMIC_IOSONLY, assign) id<XADUnarchiverDelegate> delegate;
 
--(NSString *)destination;
--(void)setDestination:(NSString *)destpath;
+@property (NS_NONATOMIC_IOSONLY, copy) NSString *destination;
 
--(int)macResourceForkStyle;
--(void)setMacResourceForkStyle:(int)style;
+@property (NS_NONATOMIC_IOSONLY) XADForkStyle macResourceForkStyle;
 
--(BOOL)preservesPermissions;
--(void)setPreserevesPermissions:(BOOL)preserveflag;
+@property (NS_NONATOMIC_IOSONLY, setter=setPreserevesPermissions:) BOOL preservesPermissions;
 
--(double)updateInterval;
--(void)setUpdateInterval:(double)interval;
+@property (NS_NONATOMIC_IOSONLY) double updateInterval;
 
 -(XADError)parseAndUnarchive;
 
@@ -84,41 +78,45 @@ outputTarget:(id)target selector:(SEL)sel argument:(id)arg;
 
 -(NSString *)adjustPathString:(NSString *)path forEntryWithDictionary:(NSDictionary *)dict;
 
--(BOOL)_shouldStop;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL _shouldStop;
 
 @end
 
 
 
 
-@interface NSObject (XADUnarchiverDelegate)
+@protocol XADUnarchiverDelegate <NSObject>
 
+@optional
 -(void)unarchiverNeedsPassword:(XADUnarchiver *)unarchiver;
 
 -(BOOL)unarchiver:(XADUnarchiver *)unarchiver shouldExtractEntryWithDictionary:(NSDictionary *)dict suggestedPath:(NSString **)pathptr;
 -(void)unarchiver:(XADUnarchiver *)unarchiver willExtractEntryWithDictionary:(NSDictionary *)dict to:(NSString *)path;
 -(void)unarchiver:(XADUnarchiver *)unarchiver didExtractEntryWithDictionary:(NSDictionary *)dict to:(NSString *)path error:(XADError)error;
 
+@required
 -(BOOL)unarchiver:(XADUnarchiver *)unarchiver shouldCreateDirectory:(NSString *)directory;
+@optional
 -(BOOL)unarchiver:(XADUnarchiver *)unarchiver shouldDeleteFileAndCreateDirectory:(NSString *)directory;
 
+@optional
 -(BOOL)unarchiver:(XADUnarchiver *)unarchiver shouldExtractArchiveEntryWithDictionary:(NSDictionary *)dict to:(NSString *)path;
 -(void)unarchiver:(XADUnarchiver *)unarchiver willExtractArchiveEntryWithDictionary:(NSDictionary *)dict withUnarchiver:(XADUnarchiver *)subunarchiver to:(NSString *)path;
 -(void)unarchiver:(XADUnarchiver *)unarchiver didExtractArchiveEntryWithDictionary:(NSDictionary *)dict withUnarchiver:(XADUnarchiver *)subunarchiver to:(NSString *)path error:(XADError)error;
 
+@required
 -(NSString *)unarchiver:(XADUnarchiver *)unarchiver destinationForLink:(XADString *)link from:(NSString *)path;
 
 -(BOOL)extractionShouldStopForUnarchiver:(XADUnarchiver *)unarchiver;
 -(void)unarchiver:(XADUnarchiver *)unarchiver extractionProgressForEntryWithDictionary:(NSDictionary *)dict
 fileFraction:(double)fileprogress estimatedTotalFraction:(double)totalprogress;
 
+@optional
 -(void)unarchiver:(XADUnarchiver *)unarchiver findsFileInterestingForReason:(NSString *)reason;
 
-@end
-
-@interface NSObject (XADUnarchiverDelegateDeprecated)
+@optional
 // Deprecated.
--(NSString *)unarchiver:(XADUnarchiver *)unarchiver pathForExtractingEntryWithDictionary:(NSDictionary *)dict;
--(BOOL)unarchiver:(XADUnarchiver *)unarchiver shouldExtractEntryWithDictionary:(NSDictionary *)dict to:(NSString *)path;
--(NSString *)unarchiver:(XADUnarchiver *)unarchiver linkDestinationForEntryWithDictionary:(NSDictionary *)dict from:(NSString *)path;
+-(NSString *)unarchiver:(XADUnarchiver *)unarchiver pathForExtractingEntryWithDictionary:(NSDictionary *)dict DEPRECATED_ATTRIBUTE;
+-(BOOL)unarchiver:(XADUnarchiver *)unarchiver shouldExtractEntryWithDictionary:(NSDictionary *)dict to:(NSString *)path DEPRECATED_ATTRIBUTE;
+-(NSString *)unarchiver:(XADUnarchiver *)unarchiver linkDestinationForEntryWithDictionary:(NSDictionary *)dict from:(NSString *)path DEPRECATED_ATTRIBUTE;
 @end
