@@ -1,6 +1,8 @@
 #import "CSStreamHandle.h"
 
 @implementation CSStreamHandle
+@synthesize fileSize = streamlength;
+@synthesize offsetInFile = streampos;
 
 -(id)initWithName:(NSString *)descname
 {
@@ -64,11 +66,6 @@
 	[super dealloc];
 }
 
-
-
--(off_t)fileSize { return streamlength; }
-
--(off_t)offsetInFile { return streampos; }
 
 -(BOOL)atEndOfFile
 {

@@ -1,6 +1,7 @@
 #import "XADBlockHandle.h"
 
 @implementation XADBlockHandle
+@synthesize offsetInFile = currpos;
 
 -(id)initWithHandle:(CSHandle *)handle blockSize:(int)size
 {
@@ -63,11 +64,6 @@ firstBlock:(uint32_t)first headerSize:(off_t)headersize
 {
 	if(length<numblocks*blocksize) return length;
 	return numblocks*blocksize;
-}
-
--(off_t)offsetInFile
-{
-	return currpos;
 }
 
 -(BOOL)atEndOfFile

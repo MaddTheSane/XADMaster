@@ -28,7 +28,7 @@ extern NSString *CSBzip2Exception;
 
 // Checksum functions for XADMaster.
 -(BOOL)hasChecksum;
--(BOOL)isChecksumCorrect;
+@property (readonly, getter=isChecksumCorrect) BOOL checksumCorrect;
 
 // Internal methods.
 -(void)_raiseBzip2:(int)error;

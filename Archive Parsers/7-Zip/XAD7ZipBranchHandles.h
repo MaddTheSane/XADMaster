@@ -24,17 +24,17 @@
 @interface XAD7ZipBCJHandle:XAD7ZipBranchHandle { uint32_t state; }
 @end
 
-@interface XAD7ZipPPCHandle:XAD7ZipBranchHandle {}
+@interface XAD7ZipPPCHandle:XAD7ZipBranchHandle
 @end
 
-@interface XAD7ZipIA64Handle:XAD7ZipBranchHandle {}
+@interface XAD7ZipIA64Handle:XAD7ZipBranchHandle
 @end
 
-@interface XAD7ZipARMHandle:XAD7ZipBranchHandle {}
+@interface XAD7ZipARMHandle:XAD7ZipBranchHandle
 @end
 
-@interface XAD7ZipThumbHandle:XAD7ZipBranchHandle {}
+@interface XAD7ZipThumbHandle:XAD7ZipBranchHandle
 @end
 
-@interface XAD7ZipSPARCHandle:XAD7ZipBranchHandle {}
+@interface XAD7ZipSPARCHandle:XAD7ZipBranchHandle
 @end

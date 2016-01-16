@@ -6,25 +6,25 @@ extern NSString *CSSizeOfSegmentUnknownException;
 
 @interface CSMultiHandle:CSHandle
 {
-	NSArray *handles;
+	NSArray<CSHandle*> *handles;
 	NSInteger currhandle;
 }
 
-+(instancetype)multiHandleWithHandleArray:(NSArray *)handlearray;
++(instancetype)multiHandleWithHandleArray:(NSArray<CSHandle*> *)handlearray;
 +(instancetype)multiHandleWithHandles:(CSHandle *)firsthandle,...;
 
 // Initializers
--(instancetype)initWithHandles:(NSArray *)handlearray;
+-(instancetype)initWithHandles:(NSArray<CSHandle*> *)handlearray;
 -(instancetype)initAsCopyOf:(CSMultiHandle *)other;
 
 // Public methods
--(NSArray *)handles;
--(CSHandle *)currentHandle;
+@property (readonly, retain) NSArray<CSHandle*> *handles;
+@property (readonly) CSHandle *currentHandle;
 
 // Implemented by this class
--(off_t)fileSize;
--(off_t)offsetInFile;
--(BOOL)atEndOfFile;
+@property (NS_NONATOMIC_IOSONLY, readonly) off_t fileSize;
+@property (NS_NONATOMIC_IOSONLY, readonly) off_t offsetInFile;
+@property (NS_NONATOMIC_IOSONLY, readonly) BOOL atEndOfFile;
 
 -(void)seekToFileOffset:(off_t)offs;
 -(void)seekToEndOfFile;

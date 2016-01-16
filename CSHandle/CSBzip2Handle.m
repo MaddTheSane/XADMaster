@@ -3,6 +3,7 @@
 NSString *CSBzip2Exception=@"CSBzip2Exception";
 
 @implementation CSBzip2Handle
+@synthesize checksumCorrect = checksumcorrect;
 
 +(CSBzip2Handle *)bzip2HandleWithHandle:(CSHandle *)handle
 {
@@ -98,8 +99,6 @@ NSString *CSBzip2Exception=@"CSBzip2Exception";
 }
 
 -(BOOL)hasChecksum { return YES; }
-
--(BOOL)isChecksumCorrect { return checksumcorrect; }
 
 -(void)_raiseBzip2:(int)error
 {

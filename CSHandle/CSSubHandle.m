@@ -1,6 +1,8 @@
 #import "CSSubHandle.h"
 
 @implementation CSSubHandle
+@synthesize parentHandle = parent;
+@synthesize startOffsetInParent = start;
 
 -(id)initWithHandle:(CSHandle *)handle from:(off_t)from length:(off_t)length
 {
@@ -35,10 +37,6 @@
 	[parent release];
 	[super dealloc];
 }
-
--(CSHandle *)parentHandle { return parent; }
-
--(off_t)startOffsetInParent { return start; }
 
 -(off_t)fileSize
 {

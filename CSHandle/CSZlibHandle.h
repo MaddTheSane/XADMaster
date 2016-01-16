@@ -22,15 +22,14 @@ extern NSString *CSZlibException;
 	uint8_t inbuffer[0x4000];
 }
 
-+(CSZlibHandle *)zlibHandleWithHandle:(CSHandle *)handle;
-+(CSZlibHandle *)zlibHandleWithHandle:(CSHandle *)handle length:(off_t)length;
-+(CSZlibHandle *)deflateHandleWithHandle:(CSHandle *)handle;
-+(CSZlibHandle *)deflateHandleWithHandle:(CSHandle *)handle length:(off_t)length;
++(instancetype)zlibHandleWithHandle:(CSHandle *)handle;
++(instancetype)zlibHandleWithHandle:(CSHandle *)handle length:(off_t)length;
++(instancetype)deflateHandleWithHandle:(CSHandle *)handle;
++(instancetype)deflateHandleWithHandle:(CSHandle *)handle length:(off_t)length;
 
 // Intializers
--(id)initWithHandle:(CSHandle *)handle length:(off_t)length header:(BOOL)header name:(NSString *)descname;
--(id)initAsCopyOf:(CSZlibHandle *)other;
--(void)dealloc;
+-(instancetype)initWithHandle:(CSHandle *)handle length:(off_t)length header:(BOOL)header name:(NSString *)descname;
+-(instancetype)initAsCopyOf:(CSZlibHandle *)other;
 
 // Public methods
 -(void)setSeekBackAtEOF:(BOOL)seekateof;

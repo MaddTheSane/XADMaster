@@ -2,7 +2,7 @@
 
 
 @implementation CSMemoryHandle
-
+@synthesize offsetInFile = memorypos;
 
 
 +(CSMemoryHandle *)memoryHandleForReadingData:(NSData *)data
@@ -66,7 +66,7 @@
 
 -(off_t)fileSize { return [backingdata length]; }
 
--(off_t)offsetInFile { return memorypos; }
+//-(off_t)offsetInFile { return memorypos; }
 
 -(BOOL)atEndOfFile { return memorypos==[backingdata length]; }
 

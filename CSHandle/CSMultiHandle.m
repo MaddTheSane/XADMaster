@@ -3,6 +3,7 @@
 NSString *CSSizeOfSegmentUnknownException=@"CSSizeOfSegmentUnknownException";
 
 @implementation CSMultiHandle
+@synthesize handles;
 
 +(CSMultiHandle *)multiHandleWithHandleArray:(NSArray *)handlearray
 {
@@ -59,8 +60,6 @@ NSString *CSSizeOfSegmentUnknownException=@"CSSizeOfSegmentUnknownException";
 	[handles release];
 	[super dealloc];
 }
-
--(NSArray *)handles { return handles; }
 
 -(CSHandle *)currentHandle { return handles[currhandle]; }
 

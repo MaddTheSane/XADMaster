@@ -24,10 +24,10 @@ static BOOL IsDataASCIIOrSeparator(NSData *data,const char *separators);
 
 +(XADPath *)pathWithStringComponents:(NSArray *)components
 {
-	int count=[components count];
+	NSInteger count=[components count];
 
 	XADPath *lastpath=nil;
-	for(int i=0;i<count;i++)
+	for(NSInteger i=0;i<count;i++)
 	{
 		NSString *component=components[i];
 
@@ -44,7 +44,7 @@ static BOOL IsDataASCIIOrSeparator(NSData *data,const char *separators);
 +(XADPath *)separatedPathWithString:(NSString *)string
 {
 	NSArray *components=[string pathComponents];
-	int count=[components count];
+	NSInteger count=[components count];
 	if(count>1&&[[components lastObject] isEqual:@"/"]) count--; // ignore ending slashes, just like NSString does
 
 	XADPath *lastpath=nil;

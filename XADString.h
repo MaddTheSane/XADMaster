@@ -150,10 +150,12 @@ extern NSString *XADMacOSCroatianStringEncodingName;
 @property (NS_NONATOMIC_IOSONLY, readonly) BOOL hasAnalyzedData;
 @property (NS_NONATOMIC_IOSONLY, readonly, copy) NSString *encodingName;
 @property (NS_NONATOMIC_IOSONLY, readonly) float confidence;
-@property (NS_NONATOMIC_IOSONLY, readonly, strong) UniversalDetector *detector;
+@property (NS_NONATOMIC_IOSONLY, readonly, retain) UniversalDetector *detector;
 
+@property (readwrite, copy) NSString *fixedEncodingName;
 -(void)setFixedEncodingName:(NSString *)encodingname;
 @property (NS_NONATOMIC_IOSONLY, readonly) BOOL hasFixedEncoding;
+@property (readwrite) BOOL prefersMacEncodings;
 -(void)setPrefersMacEncodings:(BOOL)prefermac;
 
 #ifdef __APPLE__
